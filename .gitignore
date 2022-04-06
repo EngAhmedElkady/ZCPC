@@ -1,2 +1,4 @@
 .env
 env/
+db.sqlite3
+System design.txt
