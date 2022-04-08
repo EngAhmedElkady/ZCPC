@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config,Csv
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,18 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites', 
-    
+    'django.contrib.sites',
+
     # Third-party
     'crispy_forms',
-    'allauth', 
-    'allauth.account', 
+    'allauth',
+    'allauth.account',
     'rest_framework',
     'rest_framework.authtoken',
-    
+
     # apps
-    'apps.accounts.apps.AccountsConfig',
-    
+    'accounts.apps.AccountsConfig',
+
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -58,34 +58,37 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':
     ['rest_framework.authentication.TokenAuthentication'],
-    # 'DEFAULT_PERMISSION_CLASSES':
-    # ['rest_framework.permissions.IsAuthenticated'],
+    'DEFAULT_PERMISSION_CLASSES':
+    [   'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.permissions.IsAuthenticated'
+     ],
 }
 
 # USER CONFUGRATIONS
 # ----------------------------------------------------------------------
-SITE_ID = 1 # new
+SITE_ID = 1  # new
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend', # new
+    'allauth.account.auth_backends.AuthenticationBackend',  # new
 )
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # new
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # new
 DEFAULT_FROM_EMAIL = 'admin@djangobookstore.com'
 
-ACCOUNT_SESSION_REMEMBER = True # new
-ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False # new
-ACCOUNT_USERNAME_REQUIRED = False # new
-ACCOUNT_AUTHENTICATION_METHOD = 'email' # new
-ACCOUNT_EMAIL_REQUIRED = True # new
-ACCOUNT_UNIQUE_EMAIL = True # new
+ACCOUNT_SESSION_REMEMBER = True  # new
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False  # new
+ACCOUNT_USERNAME_REQUIRED = False  # new
+ACCOUNT_AUTHENTICATION_METHOD = 'email'  # new
+ACCOUNT_EMAIL_REQUIRED = True  # new
+ACCOUNT_UNIQUE_EMAIL = True  # new
 
 LOGIN_REDIRECT_URL = 'home'
-ACCOUNT_LOGOUT_REDIRECT = 'home' # new
+ACCOUNT_LOGOUT_REDIRECT = 'home'  # new
 
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4' # new
+CRISPY_TEMPLATE_PACK = 'bootstrap4'  # new
 
 # ----------------------------------------------------------------------
 
@@ -173,12 +176,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),] # location of static files in local development.
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')    # //  ///  ///  in production 
+# location of static files in local development.
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
+# //  ///  ///  in production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    ]
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

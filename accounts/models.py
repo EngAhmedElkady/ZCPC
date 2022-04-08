@@ -8,10 +8,11 @@ from django.conf import settings
 
 
 class CustomUser(AbstractUser):
-    cv = models.FileField(upload_to='decomends', default="")
+    username=models.CharField(max_length=100,unique=False)
     bio = models.TextField(max_length=500, default="ahmed")
-    phone = models.CharField(max_length=13, default="01140369670")
-
+    codeforces_account=models.CharField(max_length=200)
+    email = models.EmailField(max_length=500,unique=True)
+    photo = models.ImageField(upload_to='media/images/')
     def __str__(self):
         return self.username
 
