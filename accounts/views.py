@@ -1,8 +1,5 @@
 # accounts/views.py
-import re
-from django.urls import reverse_lazy
 from rest_framework import status
-from django.views.generic.edit import CreateView
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,15 +8,9 @@ from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSeria
 from django.contrib.auth import login
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from knox.views import LoginView as KnoxLoginView
-from .forms import CustomUserCreationForm
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-
-class SignUpView(CreateView):
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy("login")
-    template_name = "registration/signup.html"
 
 
 # Register API

@@ -1,10 +1,9 @@
 # accounts/urls.py
 from knox import views as knox_views
-from .views import ChangePasswordView, RegisterAPI, SignUpView, LoginAPI, UserRetrieveAPIView, UpdateUserAPIView
+from .views import ChangePasswordView, RegisterAPI, LoginAPI, UserRetrieveAPIView, UpdateUserAPIView
 from django.urls import path, include
 
 urlpatterns = [
-    path("signup/", SignUpView.as_view(), name="signup"),
     path('login/', LoginAPI.as_view(), name='login'),
     path('logout/', knox_views.LogoutView.as_view(), name='logout'),
     path('logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
