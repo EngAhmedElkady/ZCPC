@@ -1,0 +1,19 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  {% comment %} <link rel="stylesheet" href="{% static 'css/login.css' %}"> {% endcomment %}
+  <title>{% block title %}Django Auth Tutorial{% endblock %}</title>
+</head>
+<body>
+  <main>
+    {% block content %}
+    
+    {% endblock %}
+  </main>
+</body>
+</html>
