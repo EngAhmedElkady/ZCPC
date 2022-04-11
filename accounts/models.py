@@ -12,11 +12,12 @@ from django.contrib.auth.models import User
 
 
 class CustomUser(AbstractUser):
+    name= models.CharField(max_length=50,blank=True,null=True)
     email = models.EmailField(_('email address'), blank=False,unique=True)
-    cv=models.FileField(upload_to='decomends',default="")
-    codeforces_account=models.CharField(max_length=500)
-    phone=models.CharField(max_length=13,default="01140369670")
-
+    bio=models.CharField(max_length=500,blank=True,null=True)
+    codeforces_account=models.CharField(max_length=100)
+    github_account=models.CharField(max_length=100,blank=True,null=True)
+    
 
     def __str__(self):
         return self.username
