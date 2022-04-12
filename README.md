@@ -8,7 +8,7 @@
 * [Use Case Diagram](#use-case-diagram)
 * [Class Diagram](#class-diagram)
 * [Activity Diagrams](#activity-diagrams)
-* [Code](#code)
+* [Usage](#code)
 
 A ICPC Platform System is a software built to handle the primary main functions of a ICPC. Platform rely on communities and famous road maps . Platform systems help members to train on the open rounds for any community and help leaders to create a communities, as well as members’ subscriptions and profiles.
 
