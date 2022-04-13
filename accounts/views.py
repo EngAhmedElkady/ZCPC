@@ -110,3 +110,5 @@ class UpdateUserAPIView(generics.UpdateAPIView):
             return Response(UserSerializer(self.object, context=self.get_serializer_context()).data)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
