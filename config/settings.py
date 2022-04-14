@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     # apps
     'accounts.apps.AccountsConfig',
+    'communnity.apps.CommunnityConfig',
 
 ]
 
@@ -177,6 +178,9 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
+# for media settings
+MEDIA_URL = '/media/' 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
