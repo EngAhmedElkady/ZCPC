@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # apps
     'accounts.apps.AccountsConfig',
     'communnity.apps.CommunnityConfig',
+    'post.apps.PostConfig'
 
 ]
 
