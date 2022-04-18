@@ -9,7 +9,11 @@ WORKDIR /code
 
 # Install dependencies
 COPY requirements.txt /code/
+<<<<<<< HEAD
 RUN python -m pip install -r requirements.txt 
+=======
+RUN pip install -r requirements.txt 
+>>>>>>> origin/main
 
 # Copy project
 COPY . /code/

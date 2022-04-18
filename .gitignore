@@ -1,3 +1,8 @@
 .env
 env/
+<<<<<<< HEAD
 db.sqlite3
+=======
+db.sqlite3
+System design.txt
+>>>>>>> origin/main

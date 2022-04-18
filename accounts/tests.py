@@ -1,4 +1,5 @@
 from django.test import TestCase
+<<<<<<< HEAD
 from d
 # Create your tests here.
 class UserTest(TestCase):
@@ -12,3 +13,7 @@ class UserTest(TestCase):
     
     def setUp(self):
         self.user=
+=======
+
+# Create your tests here.
+>>>>>>> origin/main

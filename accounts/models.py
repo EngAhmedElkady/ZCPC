@@ -1,4 +1,5 @@
 # accounts/models.py
+<<<<<<< HEAD
 from distutils.command.upload import upload
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -25,10 +26,27 @@ class CustomUser(AbstractUser):
     codeforces_account = models.CharField(max_length=100)
     github_account = models.CharField(max_length=100, blank=True, null=True)
 
+=======
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+from django.conf import settings
+
+
+class CustomUser(AbstractUser):
+    username=models.CharField(max_length=100,unique=False)
+    bio = models.TextField(max_length=500, default="ahmed")
+    codeforces_account=models.CharField(max_length=200)
+    email = models.EmailField(max_length=500,unique=True)
+    photo = models.ImageField(upload_to='media/images/')
+>>>>>>> origin/main
     def __str__(self):
         return self.username
 
 
+<<<<<<< HEAD
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
 
@@ -46,3 +64,9 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         # to:
         [reset_password_token.user.email]
     )
+=======
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def TokenCreate(sender, instance, created, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+>>>>>>> origin/main
