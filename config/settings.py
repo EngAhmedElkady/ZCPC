@@ -52,7 +52,6 @@ INSTALLED_APPS = [
 
     # apps
     'accounts.apps.AccountsConfig',
-    'communnity.apps.CommunnityConfig',
 
 ]
 

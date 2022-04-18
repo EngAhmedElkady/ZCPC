@@ -8,6 +8,9 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user data 
+    """
     class Meta:
         model = User
         fields = ["id","username", "name", "email","bio","github_account","codeforces_account"]
@@ -19,7 +22,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', "codeforces_account", 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True}}   # not return in serializer data
 
     def create(self, validated_data):
         print(validated_data)

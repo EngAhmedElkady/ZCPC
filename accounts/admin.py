@@ -9,6 +9,8 @@ class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = CustomUser
+    
+    #  to display this field in admin panal
     fieldsets= fieldsets = UserAdmin.fieldsets + (
             (None, {'fields': ('name','codeforces_account','github_account',"upload","bio")}),
     )

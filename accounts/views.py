@@ -74,7 +74,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 
 # Retrieve Current User
-class UserRetrieveAPIView(generics.RetrieveAPIView):
+class RetrieveUserAPIView(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     model = User
     serializer_class = UserSerializer
