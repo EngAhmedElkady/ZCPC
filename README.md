@@ -1,5 +1,4 @@
 # ICPC-Platform
-<<<<<<< HEAD
 <h1 align="center">ICPC Platform System</h1>
 <h3 align="center">Let's design a ICPC Platform System</h3>
 
@@ -67,4 +66,3 @@ how this platform help students?
 ## Environment
 - used docker
 - postgresql
->>>>>>> origin/main
