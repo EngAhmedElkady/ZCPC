@@ -22,7 +22,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('api-auth', include('rest_framework.urls')),
-    path("api/", include('accounts.urls')),
-
-
+    path("api/", include('modules.accounts.urls')),
+    # path('community/' , include('communnity.urls')),
+    # path('post/' , include('post.urls')),
 ]

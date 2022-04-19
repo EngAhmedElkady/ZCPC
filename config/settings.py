@@ -39,42 +39,42 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # new
+    'django.contrib.sites',
 
     # Third-party
     'crispy_forms',
-    'allauth',  # new
-    'allauth.account',  # new
+    'allauth',
+    'allauth.account',
     'rest_framework',
     'rest_framework.authtoken',
     'knox',
     'django_rest_passwordreset',
 
     # apps
-    'accounts.apps.AccountsConfig',
+    'modules.accounts',
 
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':
     [
-     'knox.auth.TokenAuthentication'
-     ],
+        'knox.auth.TokenAuthentication'
+    ],
     # 'DEFAULT_PERMISSION_CLASSES':
     # ['rest_framework.permissions.IsAuthenticated'],
 }
 
 
-SITE_ID = 1  # new
+SITE_ID = 1
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',  # new
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # new
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'admin@djangobookstore.com'
 
 ACCOUNT_SESSION_REMEMBER = True  # new
@@ -119,6 +119,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 
 DATABASES = {
     'default': {
@@ -178,8 +187,8 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 # for media settings
-MEDIA_URL = '/media/' 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
