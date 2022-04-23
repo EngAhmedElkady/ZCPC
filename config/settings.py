@@ -51,7 +51,9 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
 
     # apps
-    'modules.accounts',
+    'modules.accounts.apps.AccountsConfig',
+    'modules.communnity.apps.CommunnityConfig',
+    'modules.blog.apps.BlogConfig'
 
 ]
 
