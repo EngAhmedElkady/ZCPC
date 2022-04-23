@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     # apps
     'modules.accounts.apps.AccountsConfig',
     'modules.communnity.apps.CommunnityConfig',
-    'modules.blog.apps.BlogConfig'
+    'modules.blog.apps.BlogConfig',
+    'modules.round.apps.RoundConfig'
+
 
 ]
 
