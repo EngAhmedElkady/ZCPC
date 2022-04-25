@@ -32,8 +32,7 @@ class Round(models.Model):
     """
     name = models.CharField(max_length=200)
     disc = models.TextField(max_length=700)
-    communnity_id = models.ForeignKey(Communnity, on_delete=models.CASCADE)
-
+    communnity_id = models.ForeignKey(Communnity,on_delete=models.CASCADE,related_name="rounds")
     created_at = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=True)

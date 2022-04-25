@@ -34,3 +34,4 @@ class CreateNewCommunity(APIView):
         else:
             return Response(serializer.errors)
 
+

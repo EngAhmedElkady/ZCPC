@@ -1,3 +1,4 @@
+from modules.communnity.models import Communnity
 from .models import Round
 from .serializers import RoundApi
 from rest_framework.views import APIView
@@ -7,7 +8,8 @@ from rest_framework.response import Response
 
 class DisplayAllRounds(APIView):
     def get(self, request, communnity_id, *args, **kwargs):
-        rounds = Round.objects.filter(commmunity_id=communnity_id)
+        communnity=Communnity.objects.get(id=communnity_id)
+        rounds =communnity.rounds.all()
         count = rounds.count()
         serializer = RoundApi(rounds, many=True)
         if (count > 0):
@@ -19,11 +21,10 @@ class DisplayAllRounds(APIView):
 
 
 class DisplayUpdateDeleteRound(APIView):
-    def get(self, request, communnity_id, round_id, *args, **kwargs):
+    def get(self, request,round_id, *args, **kwargs):
         try:
-            rounds = Round.objects.get(
-                commmunity_id=communnity_id, round_id=round_id)
-            serializer = RoundApi(rounds, many=True)
+            rounds = Round.objects.get(id=round_id)
+            serializer = RoundApi(rounds)
             return Response(serializer.data)
         except:
             return Response({
