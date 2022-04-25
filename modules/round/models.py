@@ -62,7 +62,7 @@ class TeamMember(models.Model):
     """
     This is a team for this round because each round maybe has different team.
 
-    - member    : like instructor and mentors
+    - member      : like instructor and mentors
 
     Args:
         user_id   : member_id (should become at the communnity team)
