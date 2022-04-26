@@ -1,10 +1,7 @@
-from sys import api_version
-from django.shortcuts import render
-from .models import Communnity
-from .serializers import ComnunityApi
+from .models import Communnity, Team
+from .serializers import ComnunityApi,TeamApi
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions
 
 
 # display all coummunity
@@ -33,5 +30,4 @@ class CreateNewCommunity(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
-
 

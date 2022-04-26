@@ -43,7 +43,7 @@ class Round(models.Model):
         verbose_name_plural = "Rounds"
 
     def __str__(self):
-        return f"{self.name} round at {self.communnity_id}."
+        return f"{self.name} at {self.communnity_id}."
 
     def team(self):
         "return the team for this round"
@@ -58,7 +58,7 @@ class Round(models.Model):
         pass
 
 
-class TeamMember(models.Model):
+class RoundTeam(models.Model):
     """
     This is a team for this round because each round maybe has different team.
 
@@ -86,7 +86,7 @@ class TeamMember(models.Model):
         verbose_name_plural = "RoundTeams"
 
     def __str__(self):
-        return f"{self.name} at {self.round.id} as {self.role}."
+        return f"{self.user_id} at {self.round_id} as {self.role}."
 
     def feedback(self):
         "return feedback about round and average rate"
@@ -115,9 +115,8 @@ class Student(models.Model):
 class RoundFeedback(models.Model):
     "store the feedback about all members in round team."
 
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    round_id = models.ForeignKey(
-        Round, on_delete=models.CASCADE, related_name='roundfeedback')
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    round_id = models.ForeignKey(Round, on_delete=models.CASCADE)
     stars = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)])
     disc = models.TextField()
@@ -131,7 +130,7 @@ class TeamFeedback(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     team_member = models.ForeignKey(
-        TeamMember, on_delete=models.CASCADE, related_name='teamfeedback')
+        RoundTeam, on_delete=models.CASCADE, related_name='teamfeedback')
     stars = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)])
     disc = models.TextField()
