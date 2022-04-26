@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework import status
 
-# create post api for get all posts, delet post, update post
+# create post api for get all posts, delete post, update post, create post
 class GetAllPosts(APIView):
     def get(self , request , *args , **kwargs):
         posts = Post.objects.all()
@@ -71,7 +71,8 @@ class DeletePost(APIView):
 
 
 
-# for comments
+# create comment api for get all comments, delete comment, update comment, create comment
+
 class GetAllComment(APIView):
     def get(self , request , *args , **kwagrs):
         comments = Comment.objects.all()
