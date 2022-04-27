@@ -3,7 +3,7 @@ from .models import Round
 from .serializers import RoundApi
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from permissions.round import IsInCommunnityTeamOrNot
+from permissions.community import IsInCommunnityTeamOrNot
 from rest_framework.decorators import permission_classes
 # Create your views here.
 
@@ -23,6 +23,8 @@ class DisplayAllRounds(APIView):
 
 
 class DisplayUpdateDeleteRound(APIView):
+    permission_classes=[IsInCommunnityTeamOrNot]
+    
     def get(self, request, round_id, *args, **kwargs):
         try:
             rounds = Round.objects.get(id=round_id)
@@ -32,7 +34,6 @@ class DisplayUpdateDeleteRound(APIView):
             return Response({
                 "message": "No Rounds"
             })
-    @permission_classes([IsInCommunnityTeamOrNot])
     def delete(self, request,round_id,*args, **kwargs):
         try:
             rounds = Round.objects.get(id=round_id)

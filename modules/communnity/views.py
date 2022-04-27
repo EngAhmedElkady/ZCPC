@@ -31,3 +31,12 @@ class CreateNewCommunity(APIView):
         else:
             return Response(serializer.errors)
 
+
+
+class DisplayCommunityTeam(APIView):
+    def get(self , request , community_id,*args , **kwargs):
+        community = Communnity.objects.get(id=community_id)
+        team=community.team.all()
+        serializer = TeamApi(team , many=True)
+        return Response(serializer.data)
+        

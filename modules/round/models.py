@@ -32,7 +32,7 @@ class Round(models.Model):
     """
     name = models.CharField(max_length=200)
     disc = models.TextField(max_length=700)
-    communnity_id = models.ForeignKey(
+    communnity = models.ForeignKey(
         Communnity, on_delete=models.CASCADE, related_name="rounds")
     created_at = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(blank=True, null=True)
@@ -43,7 +43,7 @@ class Round(models.Model):
         verbose_name_plural = "Rounds"
 
     def __str__(self):
-        return f"{self.name} at {self.communnity_id}."
+        return f"{self.name} at {self.communnity}."
 
     def team(self):
         "return the team for this round"
@@ -65,8 +65,8 @@ class RoundTeam(models.Model):
     - member      : like instructor and mentors
 
     Args:
-        user_id   : member_id (should become at the communnity team)
-        round_id  : the round id
+        user   : member (should become at the communnity team)
+        round  : the round
         role      : role like as instructor or mentor
 
 
@@ -77,8 +77,8 @@ class RoundTeam(models.Model):
     """
 
     fields = [('instructor', 'instructor'), ('mentor', 'mentor')]
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    round_id = models.ForeignKey(Round, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
     role = models.CharField(max_length=200, choices=fields)
 
     class Meta:
@@ -86,7 +86,7 @@ class RoundTeam(models.Model):
         verbose_name_plural = "RoundTeams"
 
     def __str__(self):
-        return f"{self.user_id} at {self.round_id} as {self.role}."
+        return f"{self.user_id} at {self.round} as {self.role}."
 
     def feedback(self):
         "return feedback about round and average rate"
@@ -100,8 +100,8 @@ class Student(models.Model):
     status : if student does not solve the problems, it will be false
              that is mean remove from training but still in member 
     """
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    round_id = models.ForeignKey(Round, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
 
     class Meta:
@@ -115,14 +115,14 @@ class Student(models.Model):
 class RoundFeedback(models.Model):
     "store the feedback about all members in round team."
 
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    round_id = models.ForeignKey(Round, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
     stars = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)])
     disc = models.TextField()
 
     def __str__(self):
-        return str(self.round_id)
+        return str(self.round)
 
 
 class TeamFeedback(models.Model):

@@ -20,10 +20,6 @@ class Communnity(models.Model):
         return self.name
     
     
-    def team(self):
-        team=Team.objects.filter(communnity_id=self.id)
-        return team
-    
 class Team(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     communnity_id=models.ForeignKey(Communnity,on_delete=models.CASCADE,related_name='team')
