@@ -5,10 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from permissions.community import IsInCommunnityTeam
 from rest_framework import status, filters
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 
 class DisplayAllRounds(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self, request, communnity_id, *args, **kwargs):
         communnity = Communnity.objects.get(id=communnity_id)
         rounds = communnity.rounds.all()
@@ -23,7 +25,7 @@ class DisplayAllRounds(APIView):
 
 
 class DisplayUpdateDeleteRound(APIView):
-    permission_classes=[IsInCommunnityTeam]
+    permission_classes=[IsInCommunnityTeam & IsAuthenticated]
     
     def get(self, request, round_id, *args, **kwargs):
         try:
