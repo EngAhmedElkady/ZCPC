@@ -1,7 +1,7 @@
 from rest_framework import permissions
 from modules.communnity.models import Communnity,Team
 
-class IsInCommunnityTeamOrNot(permissions.BasePermission):
+class IsInCommunnityTeam(permissions.BasePermission):
     """
     if current user in the Communnity team he will has a permission
     to delete and update all future in this community

@@ -4,7 +4,7 @@ from .models import Round
 # create round api
 
 
-class RoundApi(serializers.ModelSerializer):
+class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = '__all__'

@@ -1,10 +1,10 @@
 from modules.communnity.models import Communnity
 from .models import Round
-from .serializers import RoundApi
+from .serializers import RoundSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from permissions.community import IsInCommunnityTeamOrNot
-from rest_framework.decorators import permission_classes
+from permissions.community import IsInCommunnityTeam
+from rest_framework import status, filters
 # Create your views here.
 
 
@@ -13,7 +13,7 @@ class DisplayAllRounds(APIView):
         communnity = Communnity.objects.get(id=communnity_id)
         rounds = communnity.rounds.all()
         count = rounds.count()
-        serializer = RoundApi(rounds, many=True)
+        serializer = RoundSerializer(rounds, many=True)
         if (count > 0):
             return Response(serializer.data)
         else:
@@ -23,17 +23,40 @@ class DisplayAllRounds(APIView):
 
 
 class DisplayUpdateDeleteRound(APIView):
-    permission_classes=[IsInCommunnityTeamOrNot]
+    permission_classes=[IsInCommunnityTeam]
     
     def get(self, request, round_id, *args, **kwargs):
         try:
             rounds = Round.objects.get(id=round_id)
-            serializer = RoundApi(rounds)
+            serializer = RoundSerializer(rounds)
             return Response(serializer.data)
         except:
             return Response({
                 "message": "No Rounds"
             })
+            
+    def post(self, request):
+        serializer = RoundSerializer(data= request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status = status.HTTP_201_CREATED
+            )
+        return Response(
+            serializer.data,
+            status= status.HTTP_400_BAD_REQUEST
+        )        
+    
+    def put(self, request,round_id,*args, **kwargs):
+        round = Round.objects.get(id=round_id) 
+        serializer = RoundSerializer(round, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
     def delete(self, request,round_id,*args, **kwargs):
         try:
             rounds = Round.objects.get(id=round_id)
@@ -48,4 +71,6 @@ class DisplayUpdateDeleteRound(APIView):
             return Response({
                 "message": "No Rounds"
             })
+            
+    
         
