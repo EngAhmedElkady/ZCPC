@@ -18,7 +18,7 @@ def incommunityteam(request,id):
     team=communnity.team.all();
     flag = False
     for member in team:
-        if request.user == member.user_id:
+        if request.user == member.user_id and (member.role=='Team Leader' or member.role=="Vise"):
             flag=True
             break
     return flag
@@ -52,14 +52,16 @@ class viewsets_roundteam(viewsets.ModelViewSet):
     queryset=RoundTeam.objects.all()
     serializer_class=RoundTeamSerializer
     permission_classes = {
-        IsInCommunnityTeam & IsAuthenticated: ['update','post', 'partial_update', 'destroy', 'list', 'create'],
+        IsInCommunnityTeam & IsAuthenticated: ['update','post', 'partial_update', 'destroy', 'list'],
         AllowAny& IsAuthenticated: ['retrieve']
     }
     def create(self, request):
-        serializer = RoundSerializer(data=request.data)
+        serializer = RoundTeamSerializer(data=request.data)
         if serializer.is_valid():
-            id = request.data['communnity']
-            if incommunityteam(request,id):
+            round_id = request.data['round']
+            round=Round.objects.get(id=round_id);
+            community_id=round.communnity.id
+            if incommunityteam(request,community_id):
                 serializer.save()
                 return Response(
                 serializer.data,
