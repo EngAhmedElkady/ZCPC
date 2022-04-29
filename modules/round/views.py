@@ -35,8 +35,6 @@ class viewsets_round(viewsets.ModelViewSet):
                 )
 
 # Round Team
-
-
 class viewsets_roundteam(viewsets.ModelViewSet):
     queryset = RoundTeam.objects.all()
     serializer_class = RoundTeamSerializer
