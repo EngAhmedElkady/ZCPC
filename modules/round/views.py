@@ -1,78 +1,71 @@
+from urllib import response
 from modules.communnity.models import Communnity
-from .models import Round
-from .serializers import RoundSerializer
+from .models import Round, RoundTeam
+from .serializers import RoundSerializer, RoundTeamSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from permissions.community import IsInCommunnityTeam
-from rest_framework import status, filters
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
 
+# help function 
 
-class DisplayAllRounds(APIView):
-    permission_classes=[IsAuthenticated]
-    def get(self, request, communnity_id, *args, **kwargs):
-        communnity = Communnity.objects.get(id=communnity_id)
-        rounds = communnity.rounds.all()
-        count = rounds.count()
-        serializer = RoundSerializer(rounds, many=True)
-        if (count > 0):
-            return Response(serializer.data)
-        else:
-            return Response({
-                "message": "No Rounds"
-            })
+def incommunityteam(request,id):
+    communnity=Communnity.objects.get(id = id)
+    team=communnity.team.all();
+    flag = False
+    for member in team:
+        if request.user == member.user_id:
+            flag=True
+            break
+    return flag
 
+# Round
+class viewsets_round(viewsets.ModelViewSet):
+    queryset = Round.objects.all()
+    serializer_class = RoundSerializer
+    permission_classes = {
+        IsInCommunnityTeam & IsAuthenticated: ['update','post', 'partial_update', 'destroy', 'list', 'create'],
+        AllowAny& IsAuthenticated: ['retrieve']
+    }
 
-class DisplayUpdateDeleteRound(APIView):
-    permission_classes=[IsInCommunnityTeam & IsAuthenticated]
-    
-    def get(self, request, round_id, *args, **kwargs):
-        try:
-            rounds = Round.objects.get(id=round_id)
-            serializer = RoundSerializer(rounds)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "No Rounds"
-            })
-            
-    def post(self, request):
-        serializer = RoundSerializer(data= request.data)
+    def create(self, request):
+        serializer = RoundSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(
+            id = request.data['communnity']
+            if incommunityteam(request,id):
+                serializer.save()
+                return Response(
                 serializer.data,
                 status = status.HTTP_201_CREATED
-            )
-        return Response(
-            serializer.data,
-            status= status.HTTP_400_BAD_REQUEST
-        )        
-    
-    def put(self, request,round_id,*args, **kwargs):
-        round = Round.objects.get(id=round_id) 
-        serializer = RoundSerializer(round, data=request.data)
+                )
+            else:
+                return Response(
+                   "you don't have access"
+                )
+
+# Round Team
+class viewsets_roundteam(viewsets.ModelViewSet):
+    queryset=RoundTeam.objects.all()
+    serializer_class=RoundTeamSerializer
+    permission_classes = {
+        IsInCommunnityTeam & IsAuthenticated: ['update','post', 'partial_update', 'destroy', 'list', 'create'],
+        AllowAny& IsAuthenticated: ['retrieve']
+    }
+    def create(self, request):
+        serializer = RoundSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-    def delete(self, request,round_id,*args, **kwargs):
-        try:
-            rounds = Round.objects.get(id=round_id)
-            communnity=Communnity.objects.get(id=rounds.communnity_id)
-            team=communnity.team.all();
-            print(team)
-            rounds.delete()
-            return Response({
-                "message": "deleted"
-            })
-        except:
-            return Response({
-                "message": "No Rounds"
-            })
-            
-    
-        
+            id = request.data['communnity']
+            if incommunityteam(request,id):
+                serializer.save()
+                return Response(
+                serializer.data,
+                status = status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                   "you don't have access"
+                )

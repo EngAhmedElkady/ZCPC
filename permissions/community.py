@@ -7,7 +7,10 @@ class IsInCommunnityTeam(permissions.BasePermission):
     to delete and update all future in this community
     
     """
+
     def has_object_permission(self, request, view, obj):
+        
+        
         if request.method in permissions.SAFE_METHODS:
             return True
         else:

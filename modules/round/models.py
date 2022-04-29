@@ -45,17 +45,6 @@ class Round(models.Model):
     def __str__(self):
         return f"{self.name} at {self.communnity}."
 
-    def team(self):
-        "return the team for this round"
-        pass
-
-    def members(self):
-        "return all members study in this round"
-        pass
-
-    def feedback(self):
-        "return feedback about round and average rate"
-        pass
 
 
 class RoundTeam(models.Model):
@@ -77,8 +66,8 @@ class RoundTeam(models.Model):
     """
 
     fields = [('instructor', 'instructor'), ('mentor', 'mentor')]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE,related_name="roundteam")
     role = models.CharField(max_length=200, choices=fields)
 
     class Meta:
@@ -88,9 +77,7 @@ class RoundTeam(models.Model):
     def __str__(self):
         return f"{self.user_id} at {self.round} as {self.role}."
 
-    def feedback(self):
-        "return feedback about round and average rate"
-        pass
+   
 
 
 class Student(models.Model):
