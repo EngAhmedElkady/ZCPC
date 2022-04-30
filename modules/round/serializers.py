@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Round, RoundTeam, Student, TeamFeedback
+from .models import Round, RoundTeam, Student, TeamFeedback, RoundFeedback
 
 # create round api
 
@@ -18,6 +18,12 @@ class RoundTeamSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
+        fields='__all__'
+
+
+class RoundFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundFeedback
         fields='__all__'
 
 

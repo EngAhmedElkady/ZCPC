@@ -94,7 +94,7 @@ class Student(models.Model):
              that is mean remove from training but still in member 
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE,related_name="roundstudent")
     status = models.BooleanField(default=True)
 
     class Meta:
@@ -102,7 +102,11 @@ class Student(models.Model):
         verbose_name_plural = "Students"
 
     def __str__(self):
-        return f"{self.user_id} at {self.round_id}."
+        return f"{self.user_id} at {self.round}."
+    
+    def get_community(self):
+        community_id = self.round.communnity.id
+        return community_id
 
 
 class RoundFeedback(models.Model):
@@ -116,17 +120,25 @@ class RoundFeedback(models.Model):
 
     def __str__(self):
         return str(self.round)
+    
+    def get_community(self):
+        community_id = self.round.communnity.id
+        return community_id
 
 
 class TeamFeedback(models.Model):
     "store the feedback about all members in round team."
 
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name="userteamfeedback")
     team_member = models.ForeignKey(
-        RoundTeam, on_delete=models.CASCADE, related_name='teamfeedback')
+        User, on_delete=models.CASCADE, related_name='teamfeedback')
     stars = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)])
     disc = models.TextField()
 
     def __str__(self):
         return str(self.team_member)
+    
+    def get_community(self):
+        community_id = self.round.communnity.id
+        return community_id

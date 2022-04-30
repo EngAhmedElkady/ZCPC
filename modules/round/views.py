@@ -1,10 +1,9 @@
 from urllib import response
-from .models import Round, RoundTeam, Student
-from .serializers import RoundSerializer, RoundTeamSerializer, StudentSerializer
+from .models import Round, RoundFeedback, RoundTeam, Student
+from .serializers import RoundSerializer, RoundTeamSerializer, StudentSerializer, RoundTeamSerializer,RoundFeedbackSerializer
 from rest_framework.response import Response
-from permissions.community import IsInCommunnityTeam, IsTeamLeader
+from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
 from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
 from .helpfunction import isteamleader, incommunityteam
@@ -69,8 +68,8 @@ class viewsets_student(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = {
-        AllowAny & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list'],
-        AllowAny & IsAuthenticated: ['retrieve']
+        AllowAny & IsAuthenticated : ['post','retrieve','list','create'],
+        (IsOwner & IsAuthenticated) | IsTeamLeader : ['retrieve','destroy','update','partial_update']
     }
 
     def create(self, request):
@@ -84,4 +83,38 @@ class viewsets_student(viewsets.ModelViewSet):
             return Response(
                 serializer.data,
                 status.HTTP_200_OK,
+            )
+
+
+class viewsets_roundfeedback(viewsets.ModelViewSet):
+    queryset = RoundFeedback.objects.all()
+    serializer_class = RoundFeedbackSerializer
+    permission_classes = {
+        (IsTeamLeader & IsAuthenticated) | IsOwner: ['update', 'partial_update', 'destroy', 'list'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
+    
+    def create(self, request):
+        serializer = RoundFeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            round_id = request.data['round']
+            round = Round.objects.get(id=round_id)
+            students=round.roundstudent.all()
+            flag=False
+            for student in students:
+                if request.user == student.user:
+                    flag=True
+                    break
+                
+            if flag==False:
+                return Response("sure you in this round")
+            
+            serializer.save()
+            return Response(
+                serializer.data,
+                status.HTTP_200_OK,
+            )
+        
+        return Response(
+                status.HTTP_400_BAD_REQUEST
             )
