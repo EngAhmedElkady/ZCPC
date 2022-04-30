@@ -15,7 +15,9 @@ class IsInCommunnityTeam(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         else:
-            round_id = obj.round.id
+            round_id=0
+            if type(obj)==Round:
+                round_id=obj.id
             round=Round.objects.get(id=round_id);
             community_id=round.communnity.id
             communnity=Communnity.objects.get(id=community_id)

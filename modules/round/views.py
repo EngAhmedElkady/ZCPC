@@ -1,6 +1,6 @@
 from urllib import response
-from .models import Round, RoundTeam
-from .serializers import RoundSerializer, RoundTeamSerializer
+from .models import Round, RoundTeam, Student
+from .serializers import RoundSerializer, RoundTeamSerializer, StudentSerializer
 from rest_framework.response import Response
 from permissions.community import IsInCommunnityTeam, IsTeamLeader
 from rest_framework import status, viewsets
@@ -35,6 +35,8 @@ class viewsets_round(viewsets.ModelViewSet):
                 )
 
 # Round Team
+
+
 class viewsets_roundteam(viewsets.ModelViewSet):
     queryset = RoundTeam.objects.all()
     serializer_class = RoundTeamSerializer
@@ -59,3 +61,28 @@ class viewsets_roundteam(viewsets.ModelViewSet):
                 return Response(
                     "you don't have access"
                 )
+        return Response(
+            "may be this user has role",
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class viewsets_student(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = {
+        AllowAny & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
+
+    def create(self, request):
+        serializer = StudentSerializer(data=request.data)
+        if serializer.is_valid():
+            round_id = request.data['round']
+            round = Round.objects.get(id=round_id)
+            if(round.status == False):
+                return Response("The Round Closed")
+            serializer.save()
+            return Response(
+                serializer.data,
+                status.HTTP_200_OK,
+            )

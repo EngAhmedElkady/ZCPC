@@ -66,7 +66,7 @@ class RoundTeam(models.Model):
     """
 
     fields = [('instructor', 'instructor'), ('mentor', 'mentor')]
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE,related_name="roundteam")
     role = models.CharField(max_length=200, choices=fields)
 
