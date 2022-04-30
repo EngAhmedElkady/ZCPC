@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework import status
+from permissions.blog import isAuther , isWriteComment
 
 # create post api for get all posts, delete post, update post, create post
 class GetAllPosts(APIView):
@@ -32,7 +33,7 @@ class GetSinglePost(APIView):
             })
 
 class CreatePost(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (isAuther)
     def get(self , request , *args ,**kwagrs):
         return Response({
             "message": "create new post"
@@ -52,6 +53,7 @@ class CreatePost(APIView):
 
 
 class UpdatePost(APIView):
+    permission_classes = [isAuther]
     def put(self, request, pk, format=None):
         post = Post.objects.get(id=pk)
         serializer = PostApi(post, data=request.data)
@@ -62,6 +64,7 @@ class UpdatePost(APIView):
 
 
 class DeletePost(APIView):
+    permission_classes = [isAuther]
     def delete(self , request , post_id ,  *args , **kwagrs):
         post = Post.objects.get(id=post_id)
         post.delete()
@@ -87,7 +90,7 @@ class GetAllComment(APIView):
 
 
 class CreateComment(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, isWriteComment)
     def get(self , request , *args ,**kwagrs):
         return Response({
             "message": "create new comment"
@@ -109,6 +112,7 @@ class CreateComment(APIView):
 
 
 class DeleteComment(APIView):
+    permission_classes = [isWriteComment]
     def delete(self , request , comment_id ,  *args , **kwagrs):
         comment = Comment.objects.get(id=comment_id)
         comment.delete()
@@ -116,6 +120,7 @@ class DeleteComment(APIView):
 
 
 class UpdateComment(APIView):
+    permission_classes = [isWriteComment]
     def put(self, request, pk, format=None):
         comment = Comment.objects.get(id=pk)
         serializer = PostApi(comment, data=request.data)
