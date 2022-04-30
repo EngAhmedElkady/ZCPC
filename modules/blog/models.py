@@ -22,7 +22,8 @@ class Post(models.Model):
     community = models.ForeignKey(Communnity, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    tag = TaggableManager()
+    tags = TaggableManager()
+
 
     def __str__(self):
         return self.title # display the title of the post

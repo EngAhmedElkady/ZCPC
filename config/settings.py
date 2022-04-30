@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'knox',
     'django_rest_passwordreset',
+    'taggit',
 
     # apps
     'modules.accounts.apps.AccountsConfig',
@@ -60,12 +61,15 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
+    
     'DEFAULT_AUTHENTICATION_CLASSES':
     [
-        'knox.auth.TokenAuthentication'
+        'knox.auth.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
-    # 'DEFAULT_PERMISSION_CLASSES':
-    # ['rest_framework.permissions.IsAuthenticated'],
+    'DEFAULT_PERMISSION_CLASSES':
+    ['rest_framework.permissions.IsAuthenticated'],
 }
 
 

@@ -26,13 +26,18 @@ class Communnity(models.Model):
         # display the name of the community
         return self.name
     
+    
+ROLE = (
+        ('m' , 'member'),
+        ('l' , 'leader')
+    )
 class Team(models.Model):
     '''
         - all Teams created has role and start journey, end journey and status
     '''
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    communnity_id=models.ForeignKey(Communnity,on_delete=models.CASCADE)
-    role=models.CharField(max_length=100,default="member")
+    communnity_id=models.ForeignKey(Communnity,on_delete=models.CASCADE,related_name='team')
+    role=models.CharField(max_length=100,choices=ROLE , default="member")
     start_journey=models.DateTimeField(auto_now_add=True)
     end_journey=models.DateTimeField(blank=True,null=True)
     status=models.BooleanField(default=True)
