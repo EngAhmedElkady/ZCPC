@@ -45,6 +45,9 @@ class Round(models.Model):
     def __str__(self):
         return f"{self.name} at {self.communnity}."
 
+    def get_community(self):
+        community_id = self.communnity.id
+        return community_id
 
 
 class RoundTeam(models.Model):
@@ -67,7 +70,8 @@ class RoundTeam(models.Model):
 
     fields = [('instructor', 'instructor'), ('mentor', 'mentor')]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE,related_name="roundteam")
+    round = models.ForeignKey(
+        Round, on_delete=models.CASCADE, related_name="roundteam")
     role = models.CharField(max_length=200, choices=fields)
 
     class Meta:
@@ -77,7 +81,9 @@ class RoundTeam(models.Model):
     def __str__(self):
         return f"{self.user_id} at {self.round} as {self.role}."
 
-   
+    def get_community(self):
+        community_id = self.round.communnity.id
+        return community_id
 
 
 class Student(models.Model):

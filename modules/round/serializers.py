@@ -13,7 +13,7 @@ class RoundSerializer(serializers.ModelSerializer):
 class RoundTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundTeam
-        fields='__all__'
+        fields=('id','user','round','role','id','get_community')
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:

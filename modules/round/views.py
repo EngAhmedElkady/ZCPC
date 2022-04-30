@@ -62,7 +62,6 @@ class viewsets_roundteam(viewsets.ModelViewSet):
                     "you don't have access"
                 )
         return Response(
-            "may be this user has role",
             status=status.HTTP_400_BAD_REQUEST
         )
 
