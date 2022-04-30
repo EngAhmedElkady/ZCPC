@@ -128,7 +128,7 @@ class RoundFeedback(models.Model):
 
 class TeamFeedback(models.Model):
     "store the feedback about all members in round team."
-
+    round=models.ForeignKey(Round,on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE,related_name="userteamfeedback")
     team_member = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='teamfeedback')
