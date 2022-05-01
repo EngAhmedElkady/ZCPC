@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'knox',
     'django_rest_passwordreset',
+    'drf_yasg',
+
 
     # apps
     'modules.accounts.apps.AccountsConfig',
@@ -212,3 +214,14 @@ ACCOUNT_LOGOUT_REDIRECT = 'home'  # new
 
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'  # new
+
+# swagger
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

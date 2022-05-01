@@ -5,5 +5,4 @@ urlpatterns = [
     path('', DisplayAllCommunity.as_view(), name="all_community"),
     path('create/', CreateNewCommunity.as_view(), name="create"),
     path("team/<int:community_id>",DisplayCommunityTeam.as_view()),
-    path('', include('modules.round.urls')),
 ]
