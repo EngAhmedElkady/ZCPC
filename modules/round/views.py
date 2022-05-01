@@ -6,7 +6,7 @@ from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
-from .helpfunction import isteamleader, incommunityteam, isinroundteam
+from .helpfunction import isteamleader, incommunityteam, isinroundteam, isinroundstudent
 
 
 # Round
@@ -22,7 +22,7 @@ class viewsets_round(viewsets.ModelViewSet):
         serializer = RoundSerializer(data=request.data)
         if serializer.is_valid():
             id = request.data['communnity']
-            if incommunityteam(request.user, id):
+            if incommunityteam(request.user.id, id):
                 serializer.save()
                 return Response(
                     serializer.data,
@@ -50,7 +50,7 @@ class viewsets_roundteam(viewsets.ModelViewSet):
             round_id = request.data['round']
             round = Round.objects.get(id=round_id)
             community_id = round.communnity.id
-            if isteamleader(request.user, community_id):
+            if isteamleader(request.user.id, community_id):
                 serializer.save()
                 return Response(
                     serializer.data,
@@ -99,15 +99,7 @@ class viewsets_roundfeedback(viewsets.ModelViewSet):
         serializer = RoundFeedbackSerializer(data=request.data)
         if serializer.is_valid():
             round_id = request.data['round']
-            round = Round.objects.get(id=round_id)
-            students = round.roundstudent.all()
-            flag = False
-            for student in students:
-                if request.user == student.user:
-                    flag = True
-                    break
-
-            if flag == False:
+            if isinroundstudent(request.data['user'], round_id) == False or request.user.id != request.data['user']:
                 return Response("sure you in this round")
 
             serializer.save()
@@ -133,18 +125,7 @@ class viewsets_teamfeedback(viewsets.ModelViewSet):
         serializer = TeamFeedbackSerializer(data=request.data)
         if serializer.is_valid():
             round_id = request.data['round']
-            round = Round.objects.get(id=round_id)
-            students = round.roundstudent.all()
-            flag = False
-            for student in students:
-                if request.user == student.user:
-                    flag = True
-                    break
-            
-            print("------------------->",request.data['team_member'])
-            print("------------------->",flag)
-            print("------------------->",isinroundteam(request.data['team_member'],round_id))
-            if flag == False or isinroundteam(request.data['team_member'],round.id)==False:
+            if request.user.id != int(request.data['user']) or isinroundstudent(request.user.id, round_id) == False or isinroundteam(request.data['team_member'], round_id) == False:
                 return Response("sure you in this round")
 
             serializer.save()
