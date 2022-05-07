@@ -40,7 +40,8 @@ urlpatterns = [
     path('api-auth', include('rest_framework.urls')),
     path("account/", include('modules.accounts.urls')),
     path('community/', include('modules.communnity.urls')),
-    path('round',include('modules.round.urls')),
+    path('round/',include('modules.round.urls')),
+    path('level/',include('modules.level.urls')),
     path('blog/', include('modules.blog.urls')),
 
     path('swagger/', schema_view.with_ui( 

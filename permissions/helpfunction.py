@@ -1,8 +1,6 @@
 # help function
 from modules.communnity.models import Communnity
-from modules.round.models import Round
-
-
+from modules.level.models import Level
 def incommunityteam(user, id):
     communnity = Communnity.objects.get(id=id)
     team = communnity.team.all()
@@ -25,9 +23,9 @@ def isteamleader(user, id):
     return flag
 
 
-def isinroundstudent(user, id):
-    round = Round.objects.get(id=id)
-    students = round.roundstudent.all()
+def isinlevelstudent(user, id):
+    level = Level.objects.get(id=id)
+    students = level.levelstudent.all()
     flag = False
     print(students)
     for student in students:
@@ -37,9 +35,9 @@ def isinroundstudent(user, id):
     return flag
 
 
-def isinroundteam(user_id, id):
-    round = Round.objects.get(id=id)
-    team = round.roundteam.all()
+def isinlevelteam(user_id, id):
+    round = Level.objects.get(id=id)
+    team = round.levelteam.all()
     flag = False
     for member in team:
         if int(user_id) == member.user.id:

@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'modules.communnity.apps.CommunnityConfig',
     'modules.blog.apps.BlogConfig',
     'modules.round.apps.RoundConfig',
+    'modules.level.apps.LevelConfig',
 
 
 ]

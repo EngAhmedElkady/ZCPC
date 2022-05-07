@@ -1,21 +1,23 @@
 from django.test import TestCase
 
 # Create your tests here.
-
 from django.test import TestCase 
 from .models import CustomUser
 # create test user
 class TestUser(TestCase):
+    
+    def __init__(self):
+        user = CustomUser.objects.create_user(username="Ahmed",
+        email='ahmed@gmail.com' , name="degea", bio="team leader" , 
+        codeforces_account="Abdo_ibrahem", github_account="Abdo_ibrahem" , password="password")
     def test_user_model(self):
-        user = CustomUser.objects.create_user(username="abdelrahman",
-            email='abdo@gmail.com' , name="abdo", bio="abdelrahman ibrahem" , 
-            codeforces_account="Abdo_ibrahem", github_account="Abdo_ibrahem" , password="password")
-        self.assertEqual(user.username,'abdelrahman')
-        self.assertEqual(user.email ,'abdo@gmail.com')
-        self.assertEqual(user.name ,'abdo' )
-        self.assertEqual(user.bio ,'abdelrahman ibrahem')
-        self.assertEqual(user.codeforces_account ,'Abdo_ibrahem' )
-        self.assertEqual(user.github_account ,'Abdo_ibrahem')
+        
+        self.assertEqual(self.user.username,'ahmed')
+        self.assertEqual(self.user.email ,'ahmed@gmail.com')
+        self.assertEqual(self.user.name ,'degea' )
+        self.assertEqual(self.user.bio ,'team leader')
+        self.assertEqual(self.user.codeforces_account ,'Abdo_ibrahem' )
+        self.assertEqual(self.user.github_account ,'Abdo_ibrahem')
 
     def test_super_user(self):
         super_user = CustomUser.objects.create_superuser(
