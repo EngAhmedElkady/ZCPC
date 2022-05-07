@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'knox',
     'django_rest_passwordreset',
     'drf_yasg',
-
+    # 'taggit',
 
     # apps
     'modules.accounts.apps.AccountsConfig',
