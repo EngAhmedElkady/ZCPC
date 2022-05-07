@@ -6,7 +6,7 @@ from .serializers import PostApi , CommentApi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , IsAuthenticatedOrReadOnly
-from rest_framework import status 
+from rest_framework import status  , generics
 from permissions.blog import isAuther , isWriteComment
 
 # create post api for get all posts, delete post, update post, create post
@@ -68,6 +68,18 @@ class GetSinglePostAndUpdateAndDelete(APIView):
         post = Post.objects.get(id=pk)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# get all posts in community 
+class GetCommunityPosts(APIView):
+    def get(self, request , pk,  *args , **kwargs):
+        try:
+            posts = Post.objects.all().filter(community=pk)
+            serializer = PostApi(posts , many=True)
+            return Response(serializer.data , status=status.HTTP_200_OK)
+        except:
+            return Response({
+                "message": "ERROR"
+            } , status=status.HTTP_400_BAD_REQUEST)
 
 
 # create comment api for get all comments, delete comment, update comment, create comment
