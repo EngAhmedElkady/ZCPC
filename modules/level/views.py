@@ -4,6 +4,7 @@ from modules.round.models import Round
 from rest_framework.response import Response
 from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
 from rest_framework import status, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
 from permissions.helpfunction import isteamleader, incommunityteam, isinlevelteam, isinlevelstudent
@@ -17,7 +18,15 @@ class viewsets_level(viewsets.ModelViewSet):
         IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
         AllowAny & IsAuthenticated: ['retrieve']
     }
-
+    def list(self,round_id=-1):
+        if round_id==-1:
+            round=Round.objects.all()
+        round=Round.objects.get(id=round_id)
+        levels=round.levels.all()
+        serializer = LevelSerializer(levels, many= True)
+        return Response(serializer.data)
+    
+    
     def create(self, request):
         serializer = LevelSerializer(data=request.data)
         if serializer.is_valid():
@@ -34,7 +43,9 @@ class viewsets_level(viewsets.ModelViewSet):
                     "you don't have access, you should be in the team of this community"
                 )
 
-# Round Team
+@api_view(['GET'])
+def roundlevels(request):
+   pass
 
 
 class viewsets_levelteam(viewsets.ModelViewSet):
