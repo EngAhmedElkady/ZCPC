@@ -44,3 +44,7 @@ def isinlevelteam(user_id, id):
             flag = True
             break
     return flag
+
+
+def isowner(user_id,id):
+    return int(user_id)==int(id)

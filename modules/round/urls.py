@@ -7,6 +7,5 @@ router.register('rounds', views.viewsets_round)
 
 urlpatterns = [
 
-    path('rest/viewsets/', include(router.urls)),
-    path("<int:community_id>/",views.CommunityRounds.as_view())
+    path('<str:community_name>/', include(router.urls)),
 ]

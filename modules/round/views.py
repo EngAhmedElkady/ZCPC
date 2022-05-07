@@ -20,8 +20,14 @@ class viewsets_round(viewsets.ModelViewSet):
         IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
         AllowAny & IsAuthenticated: ['retrieve']
     }
+    
+    def list(self, request,community_name):
+        communnity=Communnity.objects.get(name=community_name)
+        rounds=communnity.rounds.all()
+        serializer = RoundSerializer(rounds , many=True)
+        return Response(serializer.data)
 
-    def create(self, request):
+    def create(self, request,community_name):
         serializer = RoundSerializer(data=request.data)
         if serializer.is_valid():
             id = request.data['communnity']
@@ -37,12 +43,4 @@ class viewsets_round(viewsets.ModelViewSet):
                 )
 
 
-class CommunityRounds(APIView):
-    def get(self , request ,community_id ,*args , **kwargs):
-        communnity=Communnity.objects.get(id=community_id)
-        rounds=communnity.rounds.all()
-        serializer = RoundSerializer(rounds , many=True)
-        return Response(serializer.data)
-    def post(self):
-        pass
 

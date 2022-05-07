@@ -2,14 +2,13 @@ from random import choices
 from django.db import models
 from modules.communnity.models import Communnity
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.template.defaultfilters import slugify  # new
+import uuid
 User = get_user_model()
 # Create your models here.
 
 
 class Round(models.Model):
-  
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=700)
     communnity = models.ForeignKey(
