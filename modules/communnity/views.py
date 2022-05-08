@@ -34,7 +34,7 @@ class GetCommunityAndUpdateAndDelete(APIView):
     # get community 
     def get(self , request ,pk ,  *args , **kwagrs):
         try:
-            community = Communnity.objects.all()
+            community = Communnity.objects.get(id=pk)
             serializer = ComnunityApi(community)
             return Response(serializer.data)
         except:

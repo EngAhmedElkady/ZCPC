@@ -12,7 +12,7 @@ class Communnity(models.Model):
         - all community has name, university, owner, createed_at
         - you cant create community if yout not loggedin  
     '''
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100 , unique=True)
     university= models.CharField(max_length=130)
     owner = models.ForeignKey(User , on_delete=models.CASCADE)
     created_at= models.DateTimeField(auto_now_add=True)
