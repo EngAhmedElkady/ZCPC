@@ -21,13 +21,12 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', "codeforces_account", 'password')
+        fields = ('id', 'username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}   # not return in serializer data
 
     def create(self, validated_data):
         print(validated_data)
-        user = User.objects.create_user(username=validated_data['username'], email=validated_data['email'],
-                                        codeforces_account=validated_data['codeforces_account'], password=validated_data['password'])
+        user = User.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
         return user
 
     def validate_password(self, data):
