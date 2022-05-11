@@ -1,6 +1,6 @@
 from ast import Pass
 from xml.dom.pulldom import parseString
-from django.shortcuts import render
+from django.shortcuts import render , get_object_or_404
 from .models import Post , Comment
 from .serializers import PostApi , CommentApi
 from rest_framework.views import APIView
@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , IsAuthenticatedOrReadOnly
 from rest_framework import status  , generics
 from permissions.blog import isAuther , isWriteComment
+from taggit.models import Tag
 
 # create post api for get all posts, delete post, update post, create post
 # refactor blog code 
@@ -15,8 +16,12 @@ from permissions.blog import isAuther , isWriteComment
 class GetAllPostsAndCreate(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     # get all posts
-    def get(self , request , *args , **kwargs):
+    def get(self , request , tag_slug=None ,   *args , **kwargs):
         posts = Post.objects.all()
+        tag = None
+        if tag_slug:
+            tag = get_object_or_404(Tag, slug=tag_slug)
+            posts = posts.filter(tags__in=[tag])
         count = posts.count()
         serializers = PostApi(posts , many=True)
         if (count > 0):
@@ -46,9 +51,9 @@ class GetSinglePostAndUpdateAndDelete(APIView):
     permission_classes = [
         isAuther , IsAuthenticatedOrReadOnly
     ]
-    def get(self , request , pk , *args , **kwargs):
+    def get(self , request , slug , *args , **kwargs):
         try:
-            post  = Post.objects.get(id=pk)
+            post  = Post.objects.get(slug=slug)
             serializer = PostApi(post)
             return Response(serializer.data)
         except:
@@ -56,16 +61,16 @@ class GetSinglePostAndUpdateAndDelete(APIView):
                 "message": "Error"
             } , status=status.HTTP_400_BAD_REQUEST)
     # update post  if the user is Auther
-    def put(self, request, pk, format=None):
-        post = Post.objects.get(id=pk)
+    def put(self, request, slug, format=None):
+        post = Post.objects.get(slug=slug)
         serializer = PostApi(post, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # delete post if the user is Auther
-    def delete(self , request , pk ,  *args , **kwagrs):
-        post = Post.objects.get(id=pk)
+    def delete(self , request , slug ,  *args , **kwagrs):
+        post = Post.objects.get(slug=slug)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

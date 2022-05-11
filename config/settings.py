@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'knox',
     'django_rest_passwordreset',
+    'drf_yasg',
     'taggit',
 
     # apps
@@ -56,20 +57,24 @@ INSTALLED_APPS = [
     'modules.communnity.apps.CommunnityConfig',
     'modules.blog.apps.BlogConfig',
     'modules.round.apps.RoundConfig',
+    'modules.level.apps.LevelConfig',
 
 
 ]
 
 REST_FRAMEWORK = {
-    
+
     'DEFAULT_AUTHENTICATION_CLASSES':
     [
         'knox.auth.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES':
-    ['rest_framework.permissions.IsAuthenticated'],
+    # 'DEFAULT_PERMISSION_CLASSES':
+    # ['rest_framework.permissions.IsAuthenticated'],
+}
+REST_KNOX = {
+    'TOKEN_TTL': None,  # will create tokens that never expire
 }
 
 
@@ -210,3 +215,14 @@ ACCOUNT_LOGOUT_REDIRECT = 'home'  # new
 
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'  # new
+
+# swagger
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

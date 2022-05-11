@@ -1,10 +1,10 @@
 from .models import Communnity, Team
-from .serializers import ComnunityApi,TeamApi
+from .serializers import ComnunityApi, TeamApi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status , generics
 from rest_framework import permissions
-from permissions.team import isOwner
+from permissions.community import IsOwner
 # create apis for community
 # refactor community code 
 class GetCommuntiesAndCreate(APIView):
@@ -13,7 +13,7 @@ class GetCommuntiesAndCreate(APIView):
     def get(self , request , *args , **kwargs):
         communites = Communnity.objects.all()
         count = Communnity.objects.all().count()
-        serializer = ComnunityApi(communites , many=True)
+        serializer = ComnunityApi(communites, many=True)
         if (count > 0):
             return Response(serializer.data)
         else:
@@ -30,11 +30,11 @@ class GetCommuntiesAndCreate(APIView):
             return Response(serializer.errors)
 
 class GetCommunityAndUpdateAndDelete(APIView):
-    permission_classes = [isOwner]
+    permission_classes = [IsOwner]
     # get community 
-    def get(self , request ,pk ,  *args , **kwagrs):
+    def get(self , request ,slug ,  *args , **kwagrs):
         try:
-            community = Communnity.objects.get(id=pk)
+            community = Communnity.objects.get(slug=slug)
             serializer = ComnunityApi(community)
             return Response(serializer.data)
         except:
@@ -42,8 +42,8 @@ class GetCommunityAndUpdateAndDelete(APIView):
                 "message":"Error"
             } , status=status.HTTP_400_BAD_REQUEST)
     # update community
-    def put(self, request, pk, format=None):
-        community = Communnity.objects.get(id=pk)
+    def put(self, request, slug, format=None):
+        community = Communnity.objects.get(slug=slug)
         serializer = ComnunityApi(community, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -51,17 +51,24 @@ class GetCommunityAndUpdateAndDelete(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # delete community
-    def delete(self , request , pk ,  *args , **kwagrs):
-        community = Communnity.objects.get(id=pk)
+    def delete(self , request , slug ,  *args , **kwagrs):
+        community = Communnity.objects.get(slug=slug)
         community.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # display teams in community
 class DisplayCommunityTeam(APIView):
-    def get(self , request , community_id,*args , **kwargs):
-        community = Communnity.objects.get(id=community_id)
-        team=community.team.all()
-        serializer = TeamApi(team , many=True)
+    def get(self, request, community_name, *args, **kwargs):
+        community = Communnity.objects.get(name=community_name)
+        team = community.team.all()
+        serializer = TeamApi(team, many=True)
+        return Response(serializer.data)
+
+# check later
+class DisplayCommunity(APIView):
+    def get(self, request, community_name, *args, **kwargs):
+        community = Communnity.objects.get(name=community_name)
+        serializer = ComnunityApi(community)
         return Response(serializer.data)
         
 
@@ -91,7 +98,7 @@ class GetTeamsAndCreate(APIView):
             return Response(serializer.errors)
 
 class GetTeamAndUpdateAndDelete(APIView):
-    permission_classes = [isOwner]
+    permission_classes = [IsOwner]
     # get team
     def get(self , request ,pk ,  *args , **kwargs):
         team = Team.objects.get(id=pk)

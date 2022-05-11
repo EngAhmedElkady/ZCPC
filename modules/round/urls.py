@@ -1,10 +1,11 @@
-from django.urls import path
-from .views import DisplayAllRounds,DisplayUpdateDeleteRound
+from django.urls import path, include
+from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('rounds', views.viewsets_round)
+
 urlpatterns = [
-    path("<int:communnity_id>/rounds/", DisplayAllRounds.as_view(),
-         name="DisplayAllRounds"),
-    path("round/<int:round_id>/",DisplayUpdateDeleteRound.as_view(),
-         name="DisplayUpdateDeleteRound"),
-    
-#     path("round/team/<int:round_id>")
+    path('rest/viewsets/', include(router.urls)),
+    path("<int:community_id>/", views.CommunityRounds.as_view())
 ]
