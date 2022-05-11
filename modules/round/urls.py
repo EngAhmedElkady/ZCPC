@@ -10,5 +10,4 @@ urlpatterns = [
     path('rounds/', include(router.urls)),
     path('rounds/<str:round_name>/', include('modules.level.urls')),
 
-
 ]

@@ -50,13 +50,6 @@ class viewsets_level(viewsets.ModelViewSet):
                 return Response(
                     "you don't have access, you should be in the team of this community"
                 )
-
-
-@api_view(['GET'])
-def roundlevels(request):
-    pass
-
-
 class viewsets_levelteam(viewsets.ModelViewSet):
     queryset = LevelTeam.objects.all()
     serializer_class = LevelTeamSerializer
