@@ -3,9 +3,12 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register('rounds', views.viewsets_round)
+router.register('', views.viewsets_round)
 
 urlpatterns = [
 
-    path('<str:community_name>/', include(router.urls)),
+    path('rounds/', include(router.urls)),
+    path('rounds/<str:round_name>/', include('modules.level.urls')),
+
+
 ]

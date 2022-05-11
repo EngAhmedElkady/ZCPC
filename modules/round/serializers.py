@@ -7,4 +7,5 @@ class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = '__all__'
+        # exclude=('id',)
         

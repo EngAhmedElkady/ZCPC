@@ -1,108 +1,71 @@
 from .models import Level, LevelFeedback, LevelTeam, Student, TeamFeedback
 from .serializers import *
-from modules.round.models import Round
+from modules.communnity.models import Communnity
 from rest_framework.response import Response
 from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
 from rest_framework import status, viewsets
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
 from permissions.helpfunction import isteamleader, incommunityteam, isinlevelteam, isinlevelstudent
 
 
-# Level
+# Round
+class viewsets_level(viewsets.ModelViewSet):
+    queryset = Level.objects.all()
+    serializer_class = LevelSerializer
+    permission_classes = {
+        IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
 
-class GetLevelAndCreate(APIView):
-    permission_classes = [IsAuthenticated]
-    # get all level
-
-    def get(self, request, round_id, *args, **kwargs):
+    def list(self, request,community_name,round_slug):
+        communnity=None
         try:
-            round = Round.objects.get(id=round_id)
-            levels = round.levels.all()
-            serializers = LevelSerializer(levels, many=True)
-            return Response(serializers.data)
+            communnity=Communnity.objects.get(name=community_name)     
         except:
-            return Response({
-                "message": "round not found"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response("community not found")
+        try:
+            rounds=communnity.rounds.all()
+            round=rounds.get(slug=round_slug)
+            levels=round.levels.all()
+            serializer = LevelSerializer(levels,many=True)
+            return Response(serializer.data)
+        except:
+            return Response("round not found")
+            
 
-
-    # create new level
-    def post(self, request, round_id):
+    def create(self, request):
         serializer = LevelSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                round_id = request.data['round']
-                round = Round.objects.get(id=round_id)
-                
-                if incommunityteam(request.user.id, round.get_community()):
-                    serializer.save()
-                    return Response(
-                        serializer.data,
-                        status=status.HTTP_201_CREATED
-                    )
-                else:
-                    return Response(
-                        "you don't have access, you should be in the team of this community"
-                    )
-            except :
-                return Response({
-                "message": "Round not found"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            round_id = request.data['round']
+            round = Round.objects.get(id=round_id)
+            if incommunityteam(request.user.id, round.get_community()):
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    "you don't have access, you should be in the team of this community"
+                )
 
 
-class GetLevelAndUpdateAndDelete(APIView):
-    permission_classes = [IsInCommunnityTeam, IsAuthenticated]
-    # get community
-
-    def get(self, request, pk,  *args, **kwagrs):
-        try:
-            levels = Level.objects.get(id=pk)
-            serializer = LevelSerializer(levels)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "Error"
-            }, status=status.HTTP_400_BAD_REQUEST)
-    # update community
-
-    def put(self, request, pk, format=None):
-        level = Level.objects.get(id=pk)
-        serializer = LevelSerializer(level, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-
-    def delete(self, request, pk,  *args, **kwagrs):
-        level = Level.objects.get(id=pk)
-        level.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+@api_view(['GET'])
+def roundlevels(request):
+    pass
 
 
-# -------------------------------------------------------------
-#  Level Team
+class viewsets_levelteam(viewsets.ModelViewSet):
+    queryset = LevelTeam.objects.all()
+    serializer_class = LevelTeamSerializer
+    permission_classes = {
+        IsTeamLeader & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
 
-class GetLevelTeamAndCreate(APIView):
-    permission_classes = [IsAuthenticated]
-    # get all level
-
-    def get(self, request, level_id, *args, **kwargs):
-        try:
-            level = Level.objects.get(id=level_id)
-            team = level.team.all()
-            serializers = LevelTeamSerializer(team, many=True)
-            return Response(serializers.data)
-        except:
-            return Response({
-                "message": "level not found"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def post(self, request, level_id):
+    def create(self, request):
         serializer = LevelTeamSerializer(data=request.data)
         if serializer.is_valid():
             level_id = request.data['level']
@@ -123,57 +86,15 @@ class GetLevelTeamAndCreate(APIView):
         )
 
 
-class GetLevelTeamAndUpdateAndDelete(APIView):
-    permission_classes = [IsInCommunnityTeam, IsAuthenticated]
-    # get community
+class viewsets_student(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = {
+        AllowAny & IsAuthenticated: ['post', 'retrieve', 'list', 'create'],
+        (IsOwner & IsAuthenticated) | IsTeamLeader: ['retrieve', 'destroy', 'update', 'partial_update']
+    }
 
-    def get(self, request, pk,  *args, **kwagrs):
-        try:
-            team = LevelTeam.objects.get(id=pk)
-            serializer = LevelTeamSerializer(team)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "Error"
-            }, status=status.HTTP_400_BAD_REQUEST)
-    # update community
-
-    def put(self, request, pk, format=None):
-        team = LevelTeam.objects.get(id=pk)
-        serializer = LevelSerializer(team, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-
-    def delete(self, request, pk,  *args, **kwagrs):
-        team = LevelTeam.objects.get(id=pk)
-        team.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# -------------------------------------------------------------
-# student
-
-class GetLevelStudentAndCreate(APIView):
-    permission_classes = [IsAuthenticated]
-    # get all level
-
-    def get(self, request, level_id, *args, **kwargs):
-        try:
-            level = Level.objects.get(id=level_id)
-            student = level.student.all()
-            serializers = StudentSerializer(student, many=True)
-            return Response(serializers.data)
-        except :
-            return Response({
-                "message": "level not found"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def post(self, request, level_id=None):
+    def create(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
             level_id = request.data['level']
@@ -181,6 +102,8 @@ class GetLevelStudentAndCreate(APIView):
             if(level.status == False):
                 return Response("The Round Closed")
             if(request.data['user'] != str(request.user.id)):
+                print(type(request.data['user']), type(request.user.id))
+                print('1' == 1)
                 return Response("make sure you are user")
 
             serializer.save()
@@ -190,53 +113,15 @@ class GetLevelStudentAndCreate(APIView):
             )
 
 
-class GetLevelstudentAndUpdateAndDelete(APIView):
-    permission_classes = [IsAuthenticated and (IsInCommunnityTeam or IsOwner)]
+class viewsets_levelfeedback(viewsets.ModelViewSet):
+    queryset = LevelFeedback.objects.all()
+    serializer_class = LevelFeedbackSerializer
+    permission_classes = {
+        (IsTeamLeader & IsAuthenticated) | IsOwner: ['update', 'partial_update', 'destroy', 'list'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
 
-    def get(self, request, pk,  *args, **kwagrs):
-        try:
-            student = Student.objects.get(id=pk)
-            serializer = StudentSerializer(student)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "Error"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, pk, format=None):
-        student = Student.objects.get(id=pk)
-        serializer = StudentSerializer(student, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-
-    def delete(self, request, pk,  *args, **kwagrs):
-        student = Student.objects.get(id=pk)
-        student.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# -------------------------------------------------------------
-#  level feedback
-class GetLevelFeedbackAndCreate(APIView):
-    permission_classes = [IsAuthenticated]
-    # get all levelfeedback
-    def get(self, request, level_id, *args, **kwargs):
-        try:
-            level = Level.objects.get(id=level_id)
-            feedbacks = level.feedback.all()
-            serializers = LevelFeedbackSerializer(feedbacks, many=True)
-            return Response(serializers.data)
-        except :
-            return Response({
-                "message": "level not found"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def post(self, request,level_id):
+    def create(self, request):
         serializer = LevelFeedbackSerializer(data=request.data)
         if serializer.is_valid():
             level_id = request.data['level']
@@ -254,52 +139,15 @@ class GetLevelFeedbackAndCreate(APIView):
         )
 
 
-class GetLevelfeedbacktAndUpdateAndDelete(APIView):
-    permission_classes = [IsAuthenticated and (IsOwner or IsTeamLeader)]
+class viewsets_teamfeedback(viewsets.ModelViewSet):
+    queryset = TeamFeedback.objects.all()
+    serializer_class = TeamFeedbackSerializer
+    permission_classes = {
+        (IsTeamLeader & IsAuthenticated) | IsOwner: ['update', 'partial_update', 'destroy', 'list'],
+        AllowAny & IsAuthenticated: ['retrieve']
+    }
 
-    def get(self, request, pk,  *args, **kwagrs):
-        try:
-            feedback = LevelFeedback.objects.get(id=pk)
-            serializer = LevelFeedbackSerializer(feedback)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "Error"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, pk, format=None):
-        feedback = LevelFeedback.objects.get(id=pk)
-        serializer = LevelFeedbackSerializer(feedback, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-
-    def delete(self, request, pk,  *args, **kwagrs):
-        feedback = LevelFeedback.objects.get(id=pk)
-        feedback.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-# -------------------------------------------------------------
-
-
-class GetTeamFeedbackAndCreate(APIView):
-    permission_classes = [IsAuthenticated]
-    # get all levelfeedback
-    def get(self, request, level_id, *args, **kwargs):
-        try:
-            level = Level.objects.get(id=level_id)
-            teamfeedback = level.teamfeedback.all()
-            serializers = TeamFeedbackSerializer(teamfeedback, many=True)
-            return Response(serializers.data)
-        except :
-            return Response({
-                "message": "level not found"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def post(self, request):
+    def create(self, request):
         serializer = TeamFeedbackSerializer(data=request.data)
         if serializer.is_valid():
             level_id = request.data['level']
@@ -315,34 +163,3 @@ class GetTeamFeedbackAndCreate(APIView):
         return Response(
             status.HTTP_400_BAD_REQUEST
         )
-
-
-
-class GetTeamfeedbacktAndUpdateAndDelete(APIView):
-    permission_classes = [IsAuthenticated and (IsOwner or IsTeamLeader)]
-
-    def get(self, request, pk,  *args, **kwagrs):
-        try:
-            teamfeedback = TeamFeedback.objects.get(id=pk)
-            serializer = TeamFeedbackSerializer(teamfeedback)
-            return Response(serializer.data)
-        except:
-            return Response({
-                "message": "Error"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, pk, format=None):
-        teamfeedback = TeamFeedback.objects.get(id=pk)
-        serializer = TeamFeedbackSerializer(teamfeedback, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-
-    def delete(self, request, pk,  *args, **kwagrs):
-        teamfeedback = TeamFeedback.objects.get(id=pk)
-        teamfeedback.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-# -------------------------------------------------------------

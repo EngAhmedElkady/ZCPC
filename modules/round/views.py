@@ -21,11 +21,34 @@ class viewsets_round(viewsets.ModelViewSet):
         AllowAny & IsAuthenticated: ['retrieve']
     }
     
+    def retrieve(self, request, community_name,round_name, *args, **kwargs):
+        communnity=None
+        try:
+            communnity=Communnity.objects.get(name=community_name)     
+        except:
+            return Response("community not found")
+        print(communnity)
+        try:
+            rounds=communnity.rounds.all()
+            round=rounds.get(name=round_name)
+            serializer = RoundSerializer(round)
+            return Response(serializer.data)
+        except:
+            return Response("round not found")
+            
+            
+    
     def list(self, request,community_name):
-        communnity=Communnity.objects.get(name=community_name)
-        rounds=communnity.rounds.all()
-        serializer = RoundSerializer(rounds , many=True)
-        return Response(serializer.data)
+        communnity=None
+        try:
+            communnity=Communnity.objects.get(name=community_name)       
+            rounds=communnity.rounds.all()
+            serializer = RoundSerializer(rounds , many=True)
+            return Response(serializer.data)
+        except:
+            return Response("community not found")
+        
+
 
     def create(self, request,community_name):
         serializer = RoundSerializer(data=request.data)
