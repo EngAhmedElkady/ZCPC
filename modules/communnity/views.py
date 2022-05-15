@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status , generics
 from rest_framework import permissions
 from permissions.community import IsOwner
+from django.contrib.auth import get_user_model
 # create apis for community
 # refactor community code 
 class GetCommuntiesAndCreate(APIView):
@@ -59,8 +60,9 @@ class GetCommunityAndUpdateAndDelete(APIView):
 # display teams in community
 class DisplayCommunityTeam(APIView):
     def get(self, request, community_name, *args, **kwargs):
-        community = Communnity.objects.get(name=community_name)
+        community = Communnity.objects.get(slug=community_name)
         team = community.team.all()
+        # team = Team.objects.all().filter(community=community)
         serializer = TeamApi(team, many=True)
         return Response(serializer.data)
 
@@ -79,8 +81,9 @@ class DisplayCommunity(APIView):
 class GetTeamsAndCreate(APIView):
     # get all teams
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    def get(self , request , *args , **kwargs):
-        teams = Team.objects.all()
+    def get(self , request , slug,  *args , **kwargs):
+        community = Communnity.objects.get(slug=slug)
+        teams = Team.objects.all().filter(community=community)
         serializer  = TeamApi(teams , many=True)
         if teams.count() < 0 :
             return Response({
@@ -97,10 +100,32 @@ class GetTeamsAndCreate(APIView):
         else:
             return Response(serializer.errors)
 
+
+
+class CreateTeam(APIView):
+    # crete new team
+    permission_classes = [IsOwner]
+    def post(self , request , slug ,  *args , **kwargs):
+        serializer = TeamApi(data=request.data)
+        community = Communnity.objects.get(slug=slug)
+        if Team.objects.all().filter(community=community) is not None:
+            return Response({
+                "message": "you cant create new team"
+            })
+        else:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors)
+
+
+
+
 class GetTeamAndUpdateAndDelete(APIView):
     permission_classes = [IsOwner]
     # get team
-    def get(self , request ,pk ,  *args , **kwargs):
+    def get(self , request ,pk  ,  *args , **kwargs):
         team = Team.objects.get(id=pk)
         serializer = TeamApi(team)
         return Response(serializer.data)
@@ -117,3 +142,27 @@ class GetTeamAndUpdateAndDelete(APIView):
         team = Team.objects.get(id=pk)
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class GetTeamMemeber(APIView):
+    # get team memeber
+    def get(self , request , username , *args , **kwargs):
+        user = get_user_model().objects.get(username=username)
+        team = Team.objects.get(user=user)
+        serializer = TeamApi(team)
+        return Response(serializer.data)
+    
+
+    def put(self, request, slug , username, format=None):
+        user = get_user_model().objects.get(username=username)
+        team = Team.objects.get(user=user)
+        serializer = TeamApi(team, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            user.save()
+            return Response(serializer.data)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    

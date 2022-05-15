@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from modules.communnity.models import Communnity
+from modules.communnity.models import Communnity  
 from modules.round.models import Round
 
 
@@ -58,3 +58,4 @@ class IsOwner(permissions.BasePermission):
             return True
         else:
            return request.user==obj.user
+
