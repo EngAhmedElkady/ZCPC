@@ -58,18 +58,18 @@ class GetCommunityAndUpdateAndDelete(APIView):
 
 # display teams in community
 class DisplayCommunityTeam(APIView):
-    def get(self, request, community_name, *args, **kwargs):
-        community = Communnity.objects.get(name=community_name)
+    def get(self, request, slug, *args, **kwargs):
+        community = Communnity.objects.get(slug=slug)
         team = community.team.all()
         serializer = TeamApi(team, many=True)
         return Response(serializer.data)
 
 # check later
-class DisplayCommunity(APIView):
-    def get(self, request, community_name, *args, **kwargs):
-        community = Communnity.objects.get(name=community_name)
-        serializer = ComnunityApi(community)
-        return Response(serializer.data)
+# class DisplayCommunity(APIView):
+#     def get(self, request, slug, *args, **kwargs):
+#         community = Communnity.objects.get(slug=slug)
+#         serializer = ComnunityApi(community)
+#         return Response(serializer.data)
         
 
 

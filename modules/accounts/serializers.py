@@ -13,20 +13,25 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ["id","username", "name", "email","bio","github_account","codeforces_account"]
-        
-        
+        exclude = ("id",)
+
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}   # not return in serializer data
+        fields = ('id', 'username', 'codeforces',
+                  'telegram', 'email', 'password')
+        # not return in serializer data
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         print(validated_data)
-        user = User.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
+        user = User.objects.create_user(username=validated_data['username'],
+                                        codeforces=validated_data['codeforces'],
+                                        telegram=validated_data['telegram'],
+                                        email=validated_data['email'],
+                                        password=validated_data['password'])
         return user
 
     def validate_password(self, data):
@@ -50,6 +55,10 @@ class UpdateUserSerializer(serializers.Serializer):
     Serializer for update user endpoint.
     """
     name = serializers.CharField(required=False)
+    image = serializers.CharField(required=False)
     bio = serializers.CharField(required=False)
-    codeforces_account = serializers.CharField(required=False)
-    github_account = serializers.CharField(required=False)
+    codeforces = serializers.CharField(required=False)
+    telegram = serializers.URLField(required=False)
+    github = serializers.URLField(required=False)
+    linkedin = serializers.URLField(required=False)
+    university = serializers.CharField(required=False)

@@ -12,7 +12,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-
 # Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -87,8 +86,7 @@ class RetrieveUserAPIView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
+
 
 class UpdateUserAPIView(generics.UpdateAPIView):
     model = User
@@ -101,15 +99,21 @@ class UpdateUserAPIView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
-        serializer = self.get_serializer(data=request.data)        
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            self.object.name=request.data.get('name',self.object.name)
-            self.object.bio=request.data.get('bio',self.object.bio)
-            self.object.codeforces_account=request.data.get('codeforces_account',self.object.codeforces_account)
-            self.object.github_account=request.data.get('github_account',self.object.github_account)
+            self.object.name = request.data.get('name', self.object.name)
+            self.object.image = request.data.get('image', self.object.image)
+            self.object.bio = request.data.get('bio', self.object.bio)
+            self.object.codeforces = request.data.get(
+                'codeforces', self.object.codeforces)
+            self.object.telegram = request.data.get(
+                'telegram', self.object.telegram)
+            self.object.github = request.data.get('github', self.object.github)
+            self.object.linkedin = request.data.get(
+                'linkedin', self.object.linkedin)
+            self.object.university = request.data.get(
+                'university', self.object.university)
             self.object.save()
             return Response(UserSerializer(self.object, context=self.get_serializer_context()).data)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

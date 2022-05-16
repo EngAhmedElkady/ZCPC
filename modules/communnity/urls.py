@@ -10,10 +10,11 @@ from . import views
 urlpatterns = [
     # url for community
     path('' , views.GetCommuntiesAndCreate.as_view()),
-    path('community/<slug:slug>' , views.GetCommunityAndUpdateAndDelete.as_view()),
-    path("team/<str:community_name>",views.DisplayCommunityTeam.as_view()),
+    path('<slug:slug>/' , views.GetCommunityAndUpdateAndDelete.as_view()),
+    path("<slug:slug>/team/",views.DisplayCommunityTeam.as_view()),
+    path('<slug:slug>/team/<str' , views.GetTeamsAndCreate.as_view()),
+
     path('', include('modules.round.urls')),
     # url for teams
-    path('teams/' , views.GetTeamsAndCreate.as_view()),
     path('teams/<int:pk>' , views.GetTeamAndUpdateAndDelete.as_view()),
 ]
