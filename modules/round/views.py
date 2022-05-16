@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 class viewsets_round(viewsets.ModelViewSet):
     queryset = Round.objects.all()
     serializer_class = RoundSerializer
+    lookup_field='round_name'
     permission_classes = {
         IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
         AllowAny & IsAuthenticated: ['retrieve']
@@ -23,14 +24,15 @@ class viewsets_round(viewsets.ModelViewSet):
     
     def retrieve(self, request, community_name,round_name, *args, **kwargs):
         communnity=None
+        print(community_name)
         try:
-            communnity=Communnity.objects.get(name=community_name)     
+            communnity=Communnity.objects.get(slug=community_name)     
         except:
             return Response("community not found")
         print(communnity)
         try:
             rounds=communnity.rounds.all()
-            round=rounds.get(name=round_name)
+            round=rounds.get(slug=round_name)
             serializer = RoundSerializer(round)
             return Response(serializer.data)
         except:
@@ -39,11 +41,13 @@ class viewsets_round(viewsets.ModelViewSet):
             
     
     def list(self, request,community_name):
+        print(community_name)
         communnity=None
         try:
-            communnity=Communnity.objects.get(name=community_name)       
-            rounds=communnity.rounds.all()
-            serializer = RoundSerializer(rounds , many=True)
+            communnity=Communnity.objects.get(slug=community_name)       
+            all_rounds=communnity.rounds.all()
+            print(all_rounds)
+            serializer = RoundSerializer(all_rounds, many=True)
             return Response(serializer.data)
         except:
             return Response("community not found")

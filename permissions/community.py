@@ -20,7 +20,7 @@ class IsInCommunnityTeam(permissions.BasePermission):
             team = communnity.team.all()
             flag = False
             for member in team:
-                if request.user == member.user_id:
+                if request.user == member.user:
                     flag = True
                     break
             return flag
@@ -57,5 +57,5 @@ class IsOwner(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         else:
-           return request.user==obj.user
+               return request.user==obj.user
 

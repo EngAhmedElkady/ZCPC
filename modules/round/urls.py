@@ -7,7 +7,7 @@ router.register('', views.viewsets_round)
 
 urlpatterns = [
 
-    path('rounds/', include(router.urls)),
-    path('rounds/<str:round_name>/', include('modules.level.urls')),
+    path('', include(router.urls)),
+    path('<slug:round_name>/', include('modules.level.urls')),
 
 ]

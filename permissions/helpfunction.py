@@ -6,7 +6,7 @@ def incommunityteam(user, id):
     team = communnity.team.all()
     flag = False
     for member in team:
-        if user == member.user_id.id:
+        if user == member.user.id:
             flag = True
             break
     return flag
