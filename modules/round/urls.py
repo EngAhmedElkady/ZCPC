@@ -1,9 +1,12 @@
 from django.urls import path, include
-from . import views
+from . import views 
+from modules.communnity import views as s
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register('', views.viewsets_round)
+router.register('round', views.viewsets_round)
+router.register('team', s.viewsets_team)
+
 
 urlpatterns = [
 

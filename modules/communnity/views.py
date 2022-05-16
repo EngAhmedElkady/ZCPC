@@ -23,13 +23,43 @@ class viewsets_community(viewsets.ModelViewSet):
         IsAuthenticated: ['retrieve']
     }
 
-    def retrieve(self, request,slug, *args, **kwargs):
+    def retrieve(self, request, slug, *args, **kwargs):
         try:
             communnity = Communnity.objects.get(slug=slug)
             serializer = ComnunityApi(communnity)
             return Response(serializer.data)
         except:
             return Response("Community not found")
+
+    def update(self, request, slug, username, *args, **kwargs):
+        try:
+            communnity = Communnity.objects.get(slug=slug)
+            serializer = ComnunityApi(communnity, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, slug, username, *args, **kwargs):
+        try:
+            communnity = Communnity.objects.get(slug=slug)
+            serializer = ComnunityApi(communnity, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, slug, *args, **kwargs):
+        try:
+            communnity = Communnity.objects.get(slug=slug)
+            communnity.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request):
         try:
@@ -58,17 +88,17 @@ class viewsets_community(viewsets.ModelViewSet):
 class viewsets_team(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamApi
-    lookup_field ="slug"
+    lookup_field = "username"
 
     permission_classes = {
         IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
         IsAuthenticated: ['retrieve']
     }
 
-    def retrieve(self, request, slug, username, *args, **kwargs):
+    def retrieve(self, request, community_name, username, *args, **kwargs):
         print(args, kwargs)
         try:
-            communnity = Communnity.objects.get(slug=slug)
+            communnity = Communnity.objects.get(slug=community_name)
         except:
             return Response("community not found")
 
@@ -80,11 +110,38 @@ class viewsets_team(viewsets.ModelViewSet):
         except:
             return Response("member not found")
 
-    def list(self, request,*args, **kwargs):
-        # slug=kwargs['slug']
-        print("----------------------------------------------------")
-        print(args, kwargs)
+    def update(self, request, community_name, username, *args, **kwargs):
+        try:
+            team = Team.objects.get(user=User.objects.get(username=username))
+            serializer = TeamApi(team, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("member not found", status=status.HTTP_400_BAD_REQUEST)
 
+    def partial_update(self, request, community_name, username, *args, **kwargs):
+        try:
+            team = Team.objects.get(user=User.objects.get(username=username))
+            serializer = TeamApi(team, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("member not found", status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, community_name, username, *args, **kwargs):
+        try:
+            team = Team.objects.get(user=User.objects.get(username=username))
+            team.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response("member not found", status=status.HTTP_400_BAD_REQUEST)
+
+    def list(self, request, *args, **kwargs):
+        slug = kwargs['community_name']
         try:
             communnity = Communnity.objects.get(slug=slug)
             team = communnity.team.all()
@@ -93,11 +150,19 @@ class viewsets_team(viewsets.ModelViewSet):
         except:
             return Response("community not found")
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = TeamApi(data=request.data)
         community_id = request.data['community']
-        if serializer.is_valid():
-            if incommunityteam(request.user.id, community_id):
+        ans = True
+        communnity = Communnity.objects.get(id=community_id)
+        team = communnity.team.all()
+        try:
+            user = team.get(user=User.objects.get(id=request.data['user']))
+            ans = False
+        except:
+            ans = True
+        if serializer.is_valid() and ans:
+            if incommunityteam(request.user.id, community_id) or isowner(request.user.id, communnity.owner.id):
                 serializer.save()
                 return Response(
                     serializer.data,
@@ -107,3 +172,6 @@ class viewsets_team(viewsets.ModelViewSet):
                 return Response(
                     "you don't have access"
                 )
+        return Response(
+            "may be user have a position"
+        )
