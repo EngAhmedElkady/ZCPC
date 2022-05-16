@@ -1,119 +1,112 @@
 from .models import Communnity, Team
 from .serializers import ComnunityApi, TeamApi
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status , generics
-from rest_framework import permissions
-from permissions.community import IsOwner
-# create apis for community
-# refactor community code 
-class GetCommuntiesAndCreate(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    # get all communties
-    def get(self , request , *args , **kwargs):
-        communites = Communnity.objects.all()
-        count = Communnity.objects.all().count()
-        serializer = ComnunityApi(communites, many=True)
-        if (count > 0):
-            return Response(serializer.data)
-        else:
-            return Response({
-                "message": "No community"
-            })
-    # create new community
-    def post(self , request , *args , **kwargs):
-        serializer = ComnunityApi(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors)
+from rest_framework import status 
+from django.contrib.auth import get_user_model
+from modules.communnity.models import Communnity
+from rest_framework.response import Response
+from permissions.community import IsInCommunnityTeam
+from rest_framework import status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from permissions.helpfunction import  incommunityteam, isowner,isteamleader
+# help function
+User = get_user_model()
 
-class GetCommunityAndUpdateAndDelete(APIView):
-    permission_classes = [IsOwner]
-    # get community 
-    def get(self , request ,slug ,  *args , **kwagrs):
+
+# Round
+class viewsets_community(viewsets.ModelViewSet):
+    queryset = Communnity.objects.all()
+    serializer_class = ComnunityApi
+    permission_classes = {
+        IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
+        IsAuthenticated: ['retrieve']
+    }
+    
+    def retrieve(self, request,slug, *args, **kwargs):
         try:
-            community = Communnity.objects.get(slug=slug)
-            serializer = ComnunityApi(community)
+            communnity=Communnity.objects.get(slug=slug)  
+            serializer = ComnunityApi(communnity)
+            return Response(serializer.data)   
+        except:
+            return Response("Community not found")   
+
+       
+    
+    def list(self, request):
+        try:
+            communnities=Communnity.objects.all()       
+            serializer = ComnunityApi(communnities , many=True)
             return Response(serializer.data)
         except:
-            return Response({
-                "message":"Error"
-            } , status=status.HTTP_400_BAD_REQUEST)
-    # update community
-    def put(self, request, slug, format=None):
-        community = Communnity.objects.get(slug=slug)
-        serializer = ComnunityApi(community, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete community
-    def delete(self , request , slug ,  *args , **kwagrs):
-        community = Communnity.objects.get(slug=slug)
-        community.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-# display teams in community
-class DisplayCommunityTeam(APIView):
-    def get(self, request, slug, *args, **kwargs):
-        community = Communnity.objects.get(slug=slug)
-        team = community.team.all()
-        serializer = TeamApi(team, many=True)
-        return Response(serializer.data)
-
-# check later
-# class DisplayCommunity(APIView):
-#     def get(self, request, slug, *args, **kwargs):
-#         community = Communnity.objects.get(slug=slug)
-#         serializer = ComnunityApi(community)
-#         return Response(serializer.data)
+            return Response("community not found")
         
 
 
-# create apis for team
-# refactor team code 
+    def create(self, request):
+        serializer = ComnunityApi(data=request.data)
+        if serializer.is_valid():
+            id = request.data['owner']
+            if isowner(request.user.id, id):
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    "you don't have access"
+                )
 
-class GetTeamsAndCreate(APIView):
-    # get all teams
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    def get(self , request , *args , **kwargs):
-        teams = Team.objects.all()
-        serializer  = TeamApi(teams , many=True)
-        if teams.count() < 0 :
-            return Response({
-                "message": "No teams"
-            })
-        else:
+
+class viewsets_team(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamApi
+    permission_classes = {
+        IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
+        IsAuthenticated: ['retrieve']
+    }
+    
+    def retrieve(self, request,slug,username, *args, **kwargs):
+        try:
+            communnity=Communnity.objects.get(slug=slug) 
+        except :
+            return Response("community not found")
+        
+        try:
+            user=User.objects.get(username=username)
+            team=communnity.team.get(user=user)
+            serializer=TeamApi(team)
+            return Response(serializer.data)   
+        except:
+            return Response("member not found")   
+
+       
+    
+    def list(self, request,slug):
+        try:
+            communnity=Communnity.objects.get(slug=slug)   
+            team=communnity.team.all()
+            serializer = TeamApi(team , many=True)
             return Response(serializer.data)
-    # crete new team
-    def post(self , request , *args , **kwargs):
+        except:
+            return Response("community not found")
+        
+
+
+    def create(self, request):
         serializer = TeamApi(data=request.data)
+        community_id=request.data['community']
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors)
+            if incommunityteam(request.user.id,community_id):
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    "you don't have access"
+                )
 
-class GetTeamAndUpdateAndDelete(APIView):
-    permission_classes = [IsOwner]
-    # get team
-    def get(self , request ,pk ,  *args , **kwargs):
-        team = Team.objects.get(id=pk)
-        serializer = TeamApi(team)
-        return Response(serializer.data)
-    # update team
-    def put(self, request, pk, format=None):
-        team = Team.objects.get(id=pk)
-        serializer = TeamApi(team, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # delete team
-    def delete(self , request , pk ,  *args , **kwagrs):
-        team = Team.objects.get(id=pk)
-        team.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+

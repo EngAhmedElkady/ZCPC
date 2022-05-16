@@ -1,6 +1,8 @@
 from ast import Pass
 from xml.dom.pulldom import parseString
 from django.shortcuts import render , get_object_or_404
+
+from modules.communnity.models import Communnity
 from .models import Post , Comment
 from .serializers import PostApi , CommentApi
 from rest_framework.views import APIView
@@ -15,21 +17,17 @@ from taggit.models import Tag
 
 class GetAllPostsAndCreate(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
-    # get all posts
-    def get(self , request , tag_slug=None ,   *args , **kwargs):
-        posts = Post.objects.all()
-        tag = None
-        if tag_slug:
-            tag = get_object_or_404(Tag, slug=tag_slug)
-            posts = posts.filter(tags__in=[tag])
-        count = posts.count()
-        serializers = PostApi(posts , many=True)
-        if (count > 0):
-            return Response(serializers.data)
-        else:
+    # get all posts in comuunity 
+    def get(self, request , pk,  *args , **kwargs):
+        try:
+            community = Communnity.objects.get(name=pk) 
+            posts = Post.objects.all().filter(community=community)
+            serializer = PostApi(posts , many=True)
+            return Response(serializer.data , status=status.HTTP_200_OK)
+        except:
             return Response({
-                "message": "No posts"
-            })
+                "message": "ERROR"
+            } , status=status.HTTP_400_BAD_REQUEST)
     # create new post
     def post(self , request , *args , **kwargs):
         try:
@@ -75,16 +73,6 @@ class GetSinglePostAndUpdateAndDelete(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # get all posts in community 
-class GetCommunityPosts(APIView):
-    def get(self, request , pk,  *args , **kwargs):
-        try:
-            posts = Post.objects.all().filter(community=pk)
-            serializer = PostApi(posts , many=True)
-            return Response(serializer.data , status=status.HTTP_200_OK)
-        except:
-            return Response({
-                "message": "ERROR"
-            } , status=status.HTTP_400_BAD_REQUEST)
 
 
 # create comment api for get all comments, delete comment, update comment, create comment
@@ -92,8 +80,9 @@ class GetCommunityPosts(APIView):
 
 class GetCommentsAndCreate(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
-    def get(self , request , *args , **kwagrs):
-        comments = Comment.objects.all()
+    def get(self , request , post_slug , *args , **kwagrs):
+        post = Post.objects.get(slug=post_slug)
+        comments = Comment.objects.all().filter(post=post)
         count = comments.count()
         serializers = CommentApi(comments , many=True)
         if count > 0:
