@@ -8,4 +8,3 @@ class RoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = '__all__'
         # exclude=('id',)
-        

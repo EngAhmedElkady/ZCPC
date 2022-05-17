@@ -1,15 +1,60 @@
-from django.test import TestCase
-from .models import Communnity
+import json
+from rest_framework import status
+from rest_framework.test import APITestCase
+from .models import CustomUser
+from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-# Create your tests here.
+User=get_user_model()
+class CommunnityTest(APITestCase):
+
+    def setUp(self):
+        """
+        Ensure we can create a new account object.
+        """
+        url = "http://0.0.0.0:8000/account/register/"
+        data = {
+            'username': 'DabApps',
+            'codeforces': 'elkady',
+            'telegram': 'https://web.telegram.org/',
+            'email': 'Ahmedabdal@gmail.com',
+            'password': 'as112233'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CustomUser.objects.count(), 1)
+        self.assertEqual(CustomUser.objects.get().username, 'DabApps')
+        self.token=response.data['token']
+        self.api_authentication()
+        
+    def test_login_account(self):
+        url = "http://0.0.0.0:8000/account/login/"
+        data = {
+            "username": "Ahmedabdal@gmail.com",
+            "password": "as112233"
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def api_authentication(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+
+    def test_get_account(self):
+        url = "http://0.0.0.0:8000/account/user-retrieve/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(CustomUser.objects.get().username, 'DabApps')
+        self.assertEqual(CustomUser.objects.get().email, 'Ahmedabdal@gmail.com')
+        self.assertEqual(CustomUser.objects.get().codeforces, 'elkady')
+        
+    def test_update_account(self):
+        url = "http://0.0.0.0:8000/account/user-update/"
+        data = {
+            'username': 'D',
+            'codeforces': 'e'
+         }
+        response = self.client.put(url,data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
 
 
-User = get_user_model()
-# test community model
-class TestCommunity(TestCase):
-    def test_model(self):
-        user = User.objects.create_user(username="abdelrahman" , email="abdo@gmail.com" , password="password")
-        community = Communnity.objects.create(name="icpc" , university="suez canal" , owner=user)
-        self.assertEqual(community.name , 'icpc')
-        self.assertEqual(community.university , 'suez canal')
-        self.assertEqual(community.owner , user)

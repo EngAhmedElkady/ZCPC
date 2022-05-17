@@ -12,8 +12,8 @@ class CustomUserAdmin(UserAdmin):
     
     #  to display this field in admin panal
     fieldsets= fieldsets = UserAdmin.fieldsets + (
-            (None, {'fields': ('name','codeforces_account','github_account',"upload","bio")}),
+            (None, {'fields': ('name','codeforces','github',"upload","bio")}),
     )
-    list_display = ["username","codeforces_account"]
+    list_display = ["username","codeforces"]
 
 admin.site.register(CustomUser, CustomUserAdmin)

@@ -24,7 +24,8 @@ class RegisterAPI(generics.GenericAPIView):
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
-        })
+            
+        },status.HTTP_201_CREATED)
 
 
 class LoginAPI(KnoxLoginView):
@@ -100,7 +101,7 @@ class UpdateUserAPIView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid() and request.user==self.object:
             self.object.name = request.data.get('name', self.object.name)
             self.object.image = request.data.get('image', self.object.image)
             self.object.bio = request.data.get('bio', self.object.bio)
