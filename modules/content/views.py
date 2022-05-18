@@ -3,7 +3,6 @@ from . import serializers
 from . import models
 from modules.level.models import Level
 from rest_framework.response import Response
-from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -16,10 +15,7 @@ from rest_condition import And, Or, Not
 class viewsets_content(viewsets.ModelViewSet):
     queryset = models.Content.objects.all()
     serializer_class = serializers.ContentSerializer
-    permission_classes = {
-        IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
+   
 
     def list(self, request, level_id):
         try:

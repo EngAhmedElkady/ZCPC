@@ -2,7 +2,7 @@ from .models import Level, LevelFeedback, LevelTeam, Student, TeamFeedback
 from .serializers import *
 from modules.communnity.models import Communnity
 from rest_framework.response import Response
-from permissions.community import IsInCommunnityTeam, IsTeamLeader, IsOwner
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -14,11 +14,7 @@ from permissions.helpfunction import isteamleader, incommunityteam, isinleveltea
 class viewsets_level(viewsets.ModelViewSet):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
-    permission_classes = {
-        IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
-
+   
     def list(self, request,community_name,round_slug):
         communnity=None
         try:
@@ -53,10 +49,7 @@ class viewsets_level(viewsets.ModelViewSet):
 class viewsets_levelteam(viewsets.ModelViewSet):
     queryset = LevelTeam.objects.all()
     serializer_class = LevelTeamSerializer
-    permission_classes = {
-        IsTeamLeader & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
+    
 
     def create(self, request):
         serializer = LevelTeamSerializer(data=request.data)
@@ -82,10 +75,7 @@ class viewsets_levelteam(viewsets.ModelViewSet):
 class viewsets_student(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    permission_classes = {
-        AllowAny & IsAuthenticated: ['post', 'retrieve', 'list', 'create'],
-        (IsOwner & IsAuthenticated) | IsTeamLeader: ['retrieve', 'destroy', 'update', 'partial_update']
-    }
+   
 
     def create(self, request):
         serializer = StudentSerializer(data=request.data)
@@ -109,10 +99,7 @@ class viewsets_student(viewsets.ModelViewSet):
 class viewsets_levelfeedback(viewsets.ModelViewSet):
     queryset = LevelFeedback.objects.all()
     serializer_class = LevelFeedbackSerializer
-    permission_classes = {
-        (IsTeamLeader & IsAuthenticated) | IsOwner: ['update', 'partial_update', 'destroy', 'list'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
+   
 
     def create(self, request):
         serializer = LevelFeedbackSerializer(data=request.data)
@@ -135,11 +122,7 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
 class viewsets_teamfeedback(viewsets.ModelViewSet):
     queryset = TeamFeedback.objects.all()
     serializer_class = TeamFeedbackSerializer
-    permission_classes = {
-        (IsTeamLeader & IsAuthenticated) | IsOwner: ['update', 'partial_update', 'destroy', 'list'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
-
+  
     def create(self, request):
         serializer = TeamFeedbackSerializer(data=request.data)
         if serializer.is_valid():

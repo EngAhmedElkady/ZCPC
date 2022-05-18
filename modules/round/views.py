@@ -2,25 +2,19 @@ from modules.communnity.models import Communnity
 from .models import Round
 from .serializers import RoundSerializer
 from rest_framework.response import Response
-from permissions.community import IsInCommunnityTeam
 from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from permissions.helpfunction import incommunityteam
 from rest_framework.views import APIView
 
 
 # help function
 
-
 # Round
 class viewsets_round(viewsets.ModelViewSet):
     queryset = Round.objects.all()
     serializer_class = RoundSerializer
     lookup_field = 'round_name'
-    permission_classes = {
-        IsInCommunnityTeam & IsAuthenticated: ['update', 'post', 'partial_update', 'destroy', 'list', 'create'],
-        AllowAny & IsAuthenticated: ['retrieve']
-    }
 
     def get_community(self, community_name):
         community = None

@@ -7,10 +7,11 @@ from .models import Communnity, Team
 class ComnunityApi(serializers.ModelSerializer):
     class Meta:
         model = Communnity
-        fields = ("name",'slug',"university","owner","created_at")
+        fields = ("name", 'slug', "university", "owner", "created_at")
 
 
 class TeamApi(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ["user" , 'community' , 'role' , 'start_journey' , 'end_journey' , 'status']
+        fields = ["user", 'community', 'role',
+                  'start_journey', 'end_journey', 'status']

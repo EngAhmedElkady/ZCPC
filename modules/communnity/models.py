@@ -37,7 +37,8 @@ class Communnity(models.Model):
         return self.name
 
     def get_community(self):
-        return self.id
+        community=self.objects.get(id=self.id)
+        return community
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -66,5 +67,4 @@ class Team(models.Model):
         return f"{self.user} work at {self.community} as {self.role}"
 
     def get_community(self):
-        communityId = self.community.id
-        return communityId
+        return self.community.get_community()
