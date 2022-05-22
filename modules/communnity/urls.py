@@ -3,11 +3,16 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
+router2 = DefaultRouter()
+
 router.register('', views.viewsets_community)
+router2.register('', views.viewsets_team)
 
 urlpatterns = [
 
-    path('', include(router.urls)),
-    path('<slug:community_name>/', include('modules.round.urls')),
+    path('community/', include(router.urls)),
+    path('community/<slug:community_slug>/team/',
+         include(router2.urls)),
+
 
 ]

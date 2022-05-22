@@ -1,16 +1,19 @@
 from django.urls import path, include
-from . import views 
+from . import views
 from modules.communnity import views as s
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register('round', views.viewsets_round)
-router.register('team', s.viewsets_team)
+
+router.register('', views.viewsets_round)
+# router2.register('', s.viewsets_team)
 
 
 urlpatterns = [
 
-    path('', include(router.urls)),
-    path('<slug:round_name>/', include('modules.level.urls')),
+    # path('community/<slug:community_name>/round', include(router.urls)),
+    # path('community/<slug:community_name>/', include(router.url)),
+
+    # path('<slug:round_name>/', include('modules.level.urls')),
 
 ]

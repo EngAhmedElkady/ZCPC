@@ -1,19 +1,31 @@
+from dataclasses import field
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 import django.contrib.auth.password_validation as validators
+from django.contrib.auth import authenticate
 
 User = get_user_model()
 
 # User Serializer
-
-
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for user data 
     """
     class Meta:
         model = User
-        exclude = ("id",)
+        fields = ('id', 'username', 'name', 'email', 'bio',
+                  'university', 'image', 'codeforces', 'linkedin', 'github','telegram')
+
+
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Invalid Details.")
 
 
 # Register Serializer

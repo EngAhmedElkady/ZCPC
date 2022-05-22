@@ -8,11 +8,12 @@ User = get_user_model()
 
 # create communnity model
 # delete owner field from Community model --
+
+
 def user_directory_path(instance, filename):
-    
+
     # file will be uploaded to MEDIA_ROOT / user_<id>/<filename>
     return 'community_{0}/{1}'.format(instance.name, filename)
-
 
 
 class Communnity(models.Model):
@@ -21,6 +22,7 @@ class Communnity(models.Model):
         - you cant create community if yout not loggedin  
     '''
     name = models.CharField(max_length=100, unique=True)
+    bio=models.CharField(max_length=400,blank=True,null=True)
     image = models.ImageField(
         upload_to=user_directory_path, blank=True, null=True)
     university = models.CharField(max_length=130)
@@ -37,8 +39,7 @@ class Communnity(models.Model):
         return self.name
 
     def get_community(self):
-        community=self.objects.get(id=self.id)
-        return community
+        return self
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -57,6 +58,13 @@ class Team(models.Model):
     start_journey = models.DateTimeField(auto_now_add=True)
     end_journey = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=True)
+
+    @property
+    def user__username(self):
+        return self.user.username
+    
+    def __unicode__(self):
+        return self.user.username
 
     class Meta:
         verbose_name = "Team"

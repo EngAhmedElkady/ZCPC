@@ -1,61 +1,56 @@
 from rest_framework import permissions
-from modules.communnity.models import Communnity  
+from modules.communnity.models import Communnity
 from modules.round.models import Round
 
 
-class Community_Permission:
-    """this is community permission :
-            0- all users have permision to view the community 
-            1- if you in community team you will have permission to update 
-            2- if you owner you will have permission to update 
-            
-        all functions in this class take a object
+class IsInCommunnityTeam(permissions.BasePermission):
     """
-    @staticmethod
-    def is_in_community_team(user, community):
-        "take user and community"
-        team = community.team.all()
+    if current user in the Communnity team he will has a permission
+    to delete and update all future in this community
+    """
+
+    def has_object_permission(self, request, view, obj):
+        communnity = obj.get_community()
+        print(communnity)
+        team = communnity.team.all()
+        print(team)
         flag = False
         for member in team:
-            if user == member.user:
+            if request.user == member.user:
                 flag = True
                 break
         return flag
 
-    @staticmethod
-    def is_teamleader_or_vise(user,community):
-        "take user and community"
-        team = community.team.all()
+
+class IsTeamLeader_OR_VICE(permissions.BasePermission):
+    """
+    if current user is a teamleader he will has a permission
+    to delete and update all future in this community
+    """
+    print(111)
+
+    def has_object_permission(self, request, view, obj):
+        print(IsTeamLeader_OR_VICE)
+        communnity = obj.get_community()
+        team = communnity.team.all()
         flag = False
         for member in team:
-            if user == member.user and (member.role == 'Team Leader' or member.role == "Vise"):
+            if request.user == member.user and (member.role == 'Team Leader' or member.role == "Vice"):
                 flag = True
                 break
         return flag
 
-    @staticmethod
-    def is_in_level_student(user, level):
-        "take user and level"
-        students = level.levelstudent.all()
-        flag = False
-        print(students)
-        for student in students:
-            if user == student.user:
-                flag = True
-                break
-        return flag
 
-    @staticmethod
-    def is_in_level_team(user, level):
-        "take user ans level"
-        team = level.levelteam.all()
-        flag = False
-        for member in team:
-            if user == member.user:
-                flag = True
-                break
-        return flag
+class IsOwner(permissions.BasePermission):
+    print('aaaaaaaaaaa')
 
-    @staticmethod
-    def is_owner(user_f,user_s):
-        return user_f==user_s
+    def has_object_permission(self, request, view, obj):
+        print("IsOwner")
+        return request.user == obj.owner
+
+
+class IsCurrentUser(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        print(request.user, obj.user)
+        return request.user == obj.user

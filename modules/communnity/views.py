@@ -1,236 +1,203 @@
-from yaml import serialize
 from .models import Communnity, Team
-from .serializers import ComnunityApi, TeamApi
+from .serializers import AddTMemeberTeam, CommunitySerializer, TeamSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from modules.communnity.models import Communnity
 from rest_framework.response import Response
-from permissions.community import Community_Permission
+from permissions.community import *
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-# help function
+from django.shortcuts import get_object_or_404
+
 User = get_user_model()
 
-# Round
 
 class viewsets_community(viewsets.ModelViewSet):
     queryset = Communnity.objects.all()
-    serializer_class = ComnunityApi
+    serializer_class = CommunitySerializer
     lookup_field = "slug"
-    permission_classes = [IsAuthenticated]
 
-    
+    def get_permissions(self):
+        if self.action in ['list', 'create', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update']:
+            self.permission_classes = [IsTeamLeader_OR_VICE or IsOwner]
+        elif self.action in ['destroy']:
+            self.permission_classes = [IsOwner]
+
+        return [permission() for permission in self.permission_classes]
+
+    def get_object(self, slug):
+        queryset = Communnity.objects.all()
+        community = get_object_or_404(queryset, slug=slug)
+        self.check_object_permissions(self.request, community)
+        return community
+
+    # 1 retrieve
+
     def retrieve(self, request, slug, *args, **kwargs):
         "return community with community slug"
-        try:
-            community = Communnity.objects.get(slug=slug)
-            serializer = ComnunityApi(community)
-            return Response(serializer.data)
-        except:
-            return Response("Community not found")
+        instance = self.get_object(slug)
+        serializer = CommunitySerializer(instance)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
+    # 2 update
     def update(self, request, slug, *args, **kwargs):
-        "update community with community slug"
-        try:
-            community = Communnity.objects.get(slug=slug)
-            if  (Community_Permission.is_in_community_team(request.user, community) == False and
-                 Community_Permission.is_owner( request.user, community) == False
-                ):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            
-            serializer = ComnunityApi(community, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+        print("update community with community slug")
+        instance = self.get_object(slug)
+        self.check_object_permissions(self.request, instance)
+
+        data = {
+            "name": request.data.get('name', instance.name),
+            "university": request.data.get('university', instance.university),
+            "bio": request.data.get('bio', instance.bio),
+
+            # "image": request.data.get('image', instance.image),
+
+        }
+        serializer = CommunitySerializer(instance=instance,
+                                         data=data,
+                                         partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, slug, *args, **kwargs):
-        try:
-            community = Communnity.objects.get(slug=slug)
-            if(Community_Permission.is_in_community_team(request.user, community) == False and
-               Community_Permission.is_owner(request.user, community) == False
-                ):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            serializer = ComnunityApi(community, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+        instance = self.get_object(slug)
+        data = {
+            "name": request.data.get('name', None),
+            "university": request.data.get('university', None),
+            "bio": request.data.get('bio', instance.bio),
+
+            # "image": request.data.get('image', None),
+
+        }
+        serializer = CommunitySerializer(instance=instance,
+                                         data=data,
+                                         partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, slug, *args, **kwargs):
-        try:
-            community = Communnity.objects.get(slug=slug)
-            if (Community_Permission.is_owner(request.user, community.owner) == False):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            community.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except:
-            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+        instance = self.get_object(slug)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request):
-        try:
-            communnities = Communnity.objects.all()
-            serializer = ComnunityApi(communnities, many=True)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except:
-            return Response("community not found",status=status.HTTP_404_NOT_FOUND)
+        communnities = Communnity.objects.all()
+        serializer = CommunitySerializer(communnities, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-        serializer = ComnunityApi(data=request.data)
+        user = request.user
+        serializer = CommunitySerializer(
+            data=request.data, context={'owner': user})
         if serializer.is_valid():
-            id = request.data['owner']
-            if request.user.id == id:
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-        return Response(serializer.error_messages,status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-                
-
-
+# Team
 class viewsets_team(viewsets.ModelViewSet):
     queryset = Team.objects.all()
-    serializer_class = TeamApi
-    lookup_field = "username"
-    permission_classes = [IsAuthenticated]
+    serializer_class = TeamSerializer
+    model = Team
+    lookup_field = 'user__username'
 
-    def retrieve(self, request, community_name, username, *args, **kwargs):
+    # permissions
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['create']:
+            self.permission_classes = [IsAuthenticated, IsTeamLeader_OR_VICE]
+        elif self.action in ['distroy']:
+            self.permission_classes = [
+                IsAuthenticated, IsTeamLeader_OR_VICE, IsOwner]
+
+        return [permission() for permission in self.permission_classes]
+
+    # get_object
+    def get_object(self, community_slug, user__username):
+        queryset = Communnity.objects.all()
+        community = get_object_or_404(queryset, slug=community_slug)
+        team = community.team.all()
+        member = team.get(user__username=user__username, community=community)
+        self.check_object_permissions(self.request, community)
+        return member
+
+    def retrieve(self, request, community_slug, user__username, *args, **kwargs):
         "retrieve the team member with community slug and username"
-        try:
-            community = Communnity.objects.get(slug=community_name)
-        except:
-            return Response("community not found")
+        instance = self.get_object(community_slug, user__username)
+        serializer = TeamSerializer(instance)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-        try:
-            user = User.objects.get(username=username)
-            team = community.team.get(user=user)
-            serializer = TeamApi(team)
-            return Response(serializer.data)
-        except:
-            return Response("member not found")
-
-    def update(self, request, community_name, username, *args, **kwargs):
+    def update(self, request, community_slug, user__username, *args, **kwargs):
         "update team member with community slug and username"
-        try:
-            try:
-                community = Communnity.objects.get(slug=community_name)
-            except:
-                return Response("community not found")
-            
-            try:
-                team = community.team.all()
-                team_member=team.get(user=username)
-            except :
-                return Response(f"{username} not found in {community}")
+        instance = self.get_object(community_slug, user__username)
+        data = {
+            "role": request.data.get('role', instance.role),
+            "status": request.data.get('status', instance.role),
+        }
+        serializer = TeamSerializer(instance=instance,
+                                    data=data,
+                                    partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if (Community_Permission.is_teamleader_or_vise(request.user, team.get_community()) == False):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            # update
-            serializer = TeamApi(team, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
-
-    def partial_update(self, request, community_name, username, *args, **kwargs):
+    def partial_update(self, request, community_slug, user__username, *args, **kwargs):
         "update team member with community slug and username"
-        try:
-            try:
-                community = Communnity.objects.get(slug=community_name)
-            except:
-                return Response("community not found")
-            
-            try:
-                team = community.team.all()
-                team_member=team.get(user=username)
-            except :
-                return Response(f"{username} not found in {community}")
+        instance = self.get_object(community_slug, user__username)
+        data = {
+            "role": request.data.get('role', instance.role),
+            "status": request.data.get('status', instance.role),
+        }
+        serializer = TeamSerializer(instance=instance,
+                                    data=data,
+                                    partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if (Community_Permission.is_teamleader_or_vise(request.user, team.get_community()) == False):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            # update
-            serializer = TeamApi(team, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
-        
-        
+    def destroy(self, request, community_slug, user__username, *args, **kwargs):
+        instance = self.get_object(community_slug, user__username)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def destroy(self, request, community_name, username, *args, **kwargs):
-        try:
-            try:
-                community = Communnity.objects.get(slug=community_name)
-            except:
-                return Response("community not found")
-            
-            try:
-                team = community.team.all()
-                team_member=team.get(user=username)
-            except :
-                return Response(f"{username} not found in {community}")
-            
-            if (Community_Permission.is_teamleader_or_vise(request.user, team.get_community()) == False):
-                return Response("You don't have permission",status=status.HTTP_403_FORBIDDEN)
-            
-            team.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except:
-            return Response("some thing is wrong", status=status.HTTP_400_BAD_REQUEST)
+    def list(self, request, community_slug, *args, **kwargs):
+        queryset = Communnity.objects.all()
+        community = get_object_or_404(queryset, slug=community_slug)
+        team = community.team.all()
+        serializer = TeamSerializer(team, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
-    def list(self, request, *args, **kwargs):
-        slug = kwargs['community_name']
-        try:
-            try:
-                community = Communnity.objects.get(slug=slug)
-            except:
-                return Response("community not found")
-            team = community.team.all()
-            serializer = TeamApi(team, many=True)
-            return Response(serializer.data,status.HTTP_200_OK)
-        except:
-            return Response("community not found", status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, community_slug, *args, **kwargs):
+        community = get_object_or_404(
+            Communnity.objects.all(), slug=community_slug)
+        self.check_object_permissions(self.request, community)
+        data = {
+            'email': request.data.get('email'),
+            'role': request.data.get("role", 'member'),
+            'status': request.data.get("status", True),
+        }
+        print(data)
+        serializer = AddTMemeberTeam(
+            data=data, context={'community': community})
 
-    def create(self, request, *args, **kwargs):
-        serializer = TeamApi(data=request.data)
-        community_id = request.data['community']
-        ans = True
-        try:
-            communnity = Communnity.objects.get(id=community_id)
-        except:
-            return Response("community not found")
-        
-        team = communnity.team.all()
-        try:
-            user = team.get(user=User.objects.get(id=request.data['user']))
-            ans = False
-        except:
-            ans = True
-        if serializer.is_valid() and ans:
-            if (Community_Permission.is_teamleader_or_vise(request.user, communnity) or
-                    Community_Permission.is_owner(request.user, communnity)
-                ):
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response("You don't have permission")
-
-        return Response(
-            "may be user have a position"
-        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data="Done", status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
