@@ -1,11 +1,14 @@
+from django.http import Http404
 from modules.communnity.models import Communnity
 from .models import Round
 from .serializers import RoundSerializer
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from permissions.helpfunction import incommunityteam
+from permissions.community import *
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+
 
 
 # help function
@@ -14,72 +17,85 @@ from rest_framework.views import APIView
 class viewsets_round(viewsets.ModelViewSet):
     queryset = Round.objects.all()
     serializer_class = RoundSerializer
-    lookup_field = 'round_name'
+    lookup_field = 'slug'
+    
+    def get_permissions(self):
+        
+        if self.action in ['list','retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update','create']:
+            self.permission_classes = [IsAuthenticated,IsInCommunnityTeam]
+        elif self.action in ['destroy']:
+            self.permission_classes = [IsTeamLeader_OR_VICE]
 
-    def get_community(self, community_name):
+        return [permission() for permission in self.permission_classes]
+
+
+    def get_community(self,community_slug):
         community = None
         try:
-            community = Communnity.objects.get(slug=community_name)
+            community = Communnity.objects.get(slug=community_slug)
             return community
         except:
-            return Response("community not found")
+            print("community not found")
+            raise Http404("Community does not exist")
 
-    def retrieve(self, request, community_name, round_name, *args, **kwargs):
-        try:
-            community = self.get_community(community_name)
-            rounds = community.rounds.all()
-            round = rounds.get(slug=round_name)
-            serializer = RoundSerializer(round)
-            return Response(serializer.data)
-        except:
-            return Response("round not found")
+    def get_object(self, community_slug,slug):
+        community=self.get_community(community_slug)
+        queryset = Round.objects.all()
+        round = get_object_or_404(queryset,communnity=community,slug=slug)
+        self.check_object_permissions(self.request,round)
+        print(round)
+        return round
+    
+    
+    def retrieve(self, request, community_slug, slug, *args, **kwargs):
+        "retrieve the team member with community slug and username"
+        instance = self.get_object(community_slug,slug)
+        serializer = RoundSerializer(instance)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, community_name, round_name, *args, **kwargs):
-        try:
-            community = self.get_community(community_name)
-            rounds = community.rounds.all()
-            round = rounds.get(slug=round_name)
-            serializer = RoundSerializer(round, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response("round not found")
-
-    def destroy(self, request, community_name, round_name, *args, **kwargs):
-        # try:
-        community = self.get_community(community_name)
-        rounds = community.rounds.all()
-        print(rounds)
-        round = rounds.get(slug=round_name)
-        round.delete()
-        return Response("Done", status=status.HTTP_400_BAD_REQUEST)
-        # except:
-        return Response("round not found")
-
-    def list(self, request, community_name):
-
-        try:
-            community = self.get_community(community_name)
-            all_rounds = community.rounds.all()
-            print(all_rounds)
-            serializer = RoundSerializer(all_rounds, many=True)
-            return Response(serializer.data)
-        except:
-            return Response("community not found")
-
-    def create(self, request, community_name):
-        serializer = RoundSerializer(data=request.data)
+    def update(self, request, community_slug,slug, *args, **kwargs):
+        instance = self.get_object(community_slug,slug)
+        data = {
+            "name": request.data.get('name', instance.name),
+            "description": request.data.get('description', None),
+            "status": request.data.get('status', instance.status)
+        }
+        serializer = RoundSerializer(instance=instance,
+                                         data=data,
+                                         partial=True)
         if serializer.is_valid():
-            id = request.data['communnity']
-            if incommunityteam(request.user.id, id):
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response(
-                    "you don't have access"
-                )
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def destroy(self, request, community_slug,slug, *args, **kwargs):
+        instance = self.get_object(community_slug,slug)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def list(self, request, community_slug):
+        community=self.get_community(community_slug)
+        all_rounds = community.rounds.all()   
+        serializer = RoundSerializer(all_rounds, many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    def create(self, request, community_slug):
+        serializer = RoundSerializer(data=request.data)
+        community=self.get_community(community_slug)
+        self.check_object_permissions(self.request, community)
+        print(community,"-----------")
+        print(request.data,"-----------")
+        serializer = RoundSerializer(
+            data=request.data, context={'communnity': community})
+        if serializer.is_valid():
+            print("valid")
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+       

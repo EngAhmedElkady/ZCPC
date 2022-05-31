@@ -9,7 +9,7 @@ User = get_user_model()
 
 class Level(models.Model):
     name = models.CharField(max_length=200)
-    disc = models.TextField(max_length=700)
+    description = models.TextField(max_length=700)
     round = models.ForeignKey(
         Round, on_delete=models.CASCADE, related_name="levels")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -19,6 +19,7 @@ class Level(models.Model):
     class Meta:
         verbose_name = "level"
         verbose_name_plural = "levels"
+        unique_together = ('round', 'name',)
 
     def __str__(self):
         return f"{self.name}"

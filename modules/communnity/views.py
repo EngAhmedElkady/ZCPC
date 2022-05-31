@@ -1,3 +1,6 @@
+import json
+
+from django.http import Http404
 from .models import Communnity, Team
 from .serializers import AddTMemeberTeam, CommunitySerializer, TeamSerializer
 from rest_framework.response import Response
@@ -6,9 +9,11 @@ from django.contrib.auth import get_user_model
 from modules.communnity.models import Communnity
 from rest_framework.response import Response
 from permissions.community import *
+from permissions.helpfunction import Community_Function
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
@@ -22,7 +27,7 @@ class viewsets_community(viewsets.ModelViewSet):
         if self.action in ['list', 'create', 'retrieve']:
             self.permission_classes = [IsAuthenticated]
         elif self.action in ['update', 'partial_update']:
-            self.permission_classes = [IsTeamLeader_OR_VICE or IsOwner]
+            self.permission_classes = [IsTeamLeader_OR_VICE | IsOwner]
         elif self.action in ['destroy']:
             self.permission_classes = [IsOwner]
 
@@ -40,7 +45,7 @@ class viewsets_community(viewsets.ModelViewSet):
         "return community with community slug"
         instance = self.get_object(slug)
         serializer = CommunitySerializer(instance)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     # 2 update
     def update(self, request, slug, *args, **kwargs):
@@ -61,7 +66,7 @@ class viewsets_community(viewsets.ModelViewSet):
                                          partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -80,7 +85,7 @@ class viewsets_community(viewsets.ModelViewSet):
                                          partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -92,7 +97,10 @@ class viewsets_community(viewsets.ModelViewSet):
     def list(self, request):
         communnities = Communnity.objects.all()
         serializer = CommunitySerializer(communnities, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({
+            'count': len(serializer.data),
+            'results': serializer.data
+        }, status=status.HTTP_200_OK)
 
     def create(self, request):
         user = request.user
@@ -116,28 +124,35 @@ class viewsets_team(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             self.permission_classes = [IsAuthenticated]
-        elif self.action in ['create']:
-            self.permission_classes = [IsAuthenticated, IsTeamLeader_OR_VICE]
-        elif self.action in ['distroy']:
+        elif self.action in ['create', 'update', 'partial_update']:
             self.permission_classes = [
-                IsAuthenticated, IsTeamLeader_OR_VICE, IsOwner]
+                IsAuthenticated, IsTeamLeader_OR_VICE | IsOwner]
+       
 
         return [permission() for permission in self.permission_classes]
-
+        
     # get_object
+
     def get_object(self, community_slug, user__username):
         queryset = Communnity.objects.all()
-        community = get_object_or_404(queryset, slug=community_slug)
-        team = community.team.all()
-        member = team.get(user__username=user__username, community=community)
-        self.check_object_permissions(self.request, community)
-        return member
+        try:
+            community = get_object_or_404(queryset, slug=community_slug)
+        except:
+            raise Http404("Community not found")
+        try:
+            team = community.team.all()
+            member = team.get(user__username=user__username,
+                              community=community)
+            self.check_object_permissions(self.request, community)
+            return member
+        except:
+            raise Http404("member not found")
 
     def retrieve(self, request, community_slug, user__username, *args, **kwargs):
         "retrieve the team member with community slug and username"
         instance = self.get_object(community_slug, user__username)
         serializer = TeamSerializer(instance)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, community_slug, user__username, *args, **kwargs):
         "update team member with community slug and username"
@@ -159,7 +174,7 @@ class viewsets_team(viewsets.ModelViewSet):
         "update team member with community slug and username"
         instance = self.get_object(community_slug, user__username)
         data = {
-            "role": request.data.get('role', instance.role),
+            "role": request.data.get("role", instance.role),
             "status": request.data.get('status', instance.role),
         }
         serializer = TeamSerializer(instance=instance,
@@ -167,12 +182,30 @@ class viewsets_team(viewsets.ModelViewSet):
                                     partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, community_slug, user__username, *args, **kwargs):
-        instance = self.get_object(community_slug, user__username)
+        "delete team member with community slug and username"
+        try:
+            community = Communnity.objects.get(slug=community_slug)
+        except :
+            raise Http404("Community not found")
+        try:
+            team = community.team.all()
+            member = team.get(user__username=user__username)
+            if Community_Function.is_in_community_team(request.user, community) or Community_Function.is_owner(request.user.username, member.user__username):
+                member.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+               
+        except :
+            raise Http404("member not found")
+            
+        
+        
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -190,14 +223,19 @@ class viewsets_team(viewsets.ModelViewSet):
         data = {
             'email': request.data.get('email'),
             'role': request.data.get("role", 'member'),
-            'status': request.data.get("status", True),
+            'status': request.data.get("status", False),
         }
-        print(data)
         serializer = AddTMemeberTeam(
             data=data, context={'community': community})
 
         if serializer.is_valid():
             serializer.save()
-            return Response(data="Done", status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    'message': 'Team member added successfully',
+                    'data': 'done'
+                },
+                status=status.HTTP_201_CREATED
+            )
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

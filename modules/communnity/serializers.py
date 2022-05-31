@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing_extensions import Required
-from  rest_framework.response import Response
+from django import http
+from rest_framework.response import Response
 from rest_framework import serializers
 from .models import Communnity, Team
 from django.contrib.auth import get_user_model
@@ -35,30 +36,34 @@ class CommunitySerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
 class AddTMemeberTeam(serializers.Serializer):
     email = serializers.EmailField(required=True)
     role = serializers.CharField(max_length=200)
     status = serializers.BooleanField()
 
     def validate_memeber(self, email):
-        member=User.objects.get(email=email)
-        print(member)
-        community=self.context['community']
-        print(community)
-        
-        teams=community.team.all()
-        print(teams)
+        try:
+            member = User.objects.get(email=email)
+        except:
+            raise http.Http404("user not found")
+
+        community = self.context['community']
+
+        teams = community.team.all()
         for item in teams:
-            if item.user==member:
-                raise serializers.ValidationError("this user have a position in this team")
+            if item.user == member:
+                raise http.Http404("user already in team")
         return member
-    
+
     def create(self, validated_data):
-        community=self.context['community']
-        member=self.validate_memeber(validated_data.get('email'))
-        team = Team.objects.create(user=member,community=community,role=validated_data.get('role','member'),status=validated_data.get('status',False))  # saving team object
-        print(team)
+        community = self.context['community']
+        member = self.validate_memeber(validated_data.get('email'))
+        team = Team.objects.create(user=member, community=community, role=validated_data.get(
+            'role', 'member'), status=validated_data.get('status', False))  # saving team object
         return team
+
 
 class TeamSerializer(serializers.ModelSerializer):
 
@@ -70,19 +75,7 @@ class TeamSerializer(serializers.ModelSerializer):
             'user': {'read_only': True},
             'community': {'read_only': True},
             'end_journey': {'read_only': True},
-            
-            
-            # '': {'read_only': True},
-
         }
-
-    # def create(self, validated_data):
-    #     # optional , saving extra data
-    #     validated_data['user'] = self.context['user']
-    #     validated_data['community'] = self.context['community']
-    #     team = Team.objects.create(
-    #         **validated_data)  # saving team object
-    #     return team
 
     def update(self, instance, validated_data):
         instance.role = validated_data.get('role', instance.role)

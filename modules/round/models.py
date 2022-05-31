@@ -10,7 +10,7 @@ User = get_user_model()
 class Round(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(null=False, unique=True)
-    description = models.TextField(max_length=700)
+    description = models.TextField(max_length=700, blank=True, null=True)
     communnity = models.ForeignKey(
         Communnity, on_delete=models.CASCADE, related_name="rounds")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,8 +27,8 @@ class Round(models.Model):
         verbose_name_plural = "Rounds"
 
     def __str__(self):
-        return f"{self.name} at {self.communnity}."
+        return f"{self.name}_{self.communnity.name}"
 
     def get_community(self):
-        community_id = self.communnity.id
-        return community_id
+        return self.communnity
+    

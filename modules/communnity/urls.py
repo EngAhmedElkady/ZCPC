@@ -9,7 +9,6 @@ router.register('', views.viewsets_community)
 router2.register('', views.viewsets_team)
 
 urlpatterns = [
-
     path('community/', include(router.urls)),
     path('community/<slug:community_slug>/team/',
          include(router2.urls)),

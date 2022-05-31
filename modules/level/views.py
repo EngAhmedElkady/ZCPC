@@ -2,54 +2,129 @@ from .models import Level, LevelFeedback, LevelTeam, Student, TeamFeedback
 from .serializers import *
 from modules.communnity.models import Communnity
 from rest_framework.response import Response
-
 from rest_framework import status, viewsets
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated, AllowAny
-# help function
-from permissions.helpfunction import isteamleader, incommunityteam, isinlevelteam, isinlevelstudent
+from rest_framework.permissions import IsAuthenticated
+from permissions.community import *
+from django.shortcuts import get_object_or_404
 
 
-# Round
+# level
 class viewsets_level(viewsets.ModelViewSet):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
-   
-    def list(self, request,community_name,round_slug):
-        communnity=None
+    lookup_field = 'name'
+
+    def get_permissions(self):
+
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'create']:
+            self.permission_classes = [IsAuthenticated, IsInCommunnityTeam]
+        elif self.action in ['destroy']:
+            self.permission_classes = [IsTeamLeader_OR_VICE]
+
+        return [permission() for permission in self.permission_classes]
+
+    def get_community(self, community_slug):
+        community = None
         try:
-            communnity=Communnity.objects.get(name=community_name)     
+            community = Communnity.objects.get(slug=community_slug)
+            return community
         except:
             return Response("community not found")
-        try:
-            rounds=communnity.rounds.all()
-            round=rounds.get(slug=round_slug)
-            levels=round.levels.all()
-            serializer = LevelSerializer(levels,many=True)
-            return Response(serializer.data)
-        except:
-            return Response("round not found")
-            
 
-    def create(self, request):
-        serializer = LevelSerializer(data=request.data)
+    def get_object(self, community_slug, round_slug, name):
+        community = self.get_community(community_slug)
+        queryset = Round.objects.all()
+        round = get_object_or_404(
+            queryset, communnity=community, slug=round_slug)
+        levels = round.levels.all()
+        level = get_object_or_404(levels, name=name)
+        self.check_object_permissions(self.request, community)
+        return level
+
+    def list(self, request, community_slug, round_slug):
+        community = self.get_community(community_slug)
+        rounds = community.rounds.all()
+        round = get_object_or_404(
+            rounds, communnity=community, slug=round_slug)
+        levels = round.levels.all()
+        serializer = LevelSerializer(levels, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, community_slug, round_slug, name, *args, **kwargs):
+        instance = self.get_object(community_slug, round_slug, name)
+        serializer = LevelSerializer(instance)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, community_slug, slug, *args, **kwargs):
+        instance = self.get_object(community_slug, slug)
+        data = {
+            "name": request.data.get('name', instance.name),
+            "description": request.data.get('description', None),
+            "status": request.data.get('status', instance.status)
+        }
+        serializer = LevelSerializer(instance=instance,
+                                     data=data,
+                                     partial=True)
         if serializer.is_valid():
-            round_id = request.data['round']
-            round = Round.objects.get(id=round_id)
-            if incommunityteam(request.user.id, round.get_community()):
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response(
-                    "you don't have access, you should be in the team of this community"
-                )
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, community_slug, round_slug, name, *args, **kwargs):
+        instance = self.get_object(community_slug, round_slug, name)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, request, community_slug, round_slug):
+        community = self.get_community(community_slug)
+        rounds = community.rounds.all()
+        round = get_object_or_404(
+            rounds, communnity=community, slug=round_slug)
+        self.check_object_permissions(self.request, community)
+        serializer = LevelSerializer(
+            data=request.data, context={'round': round})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class viewsets_levelteam(viewsets.ModelViewSet):
     queryset = LevelTeam.objects.all()
     serializer_class = LevelTeamSerializer
+        
+    def get_permissions(self):
     
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'create']:
+            self.permission_classes = [IsAuthenticated, IsInCommunnityTeam]
+        elif self.action in ['destroy']:
+            self.permission_classes = [IsTeamLeader_OR_VICE]
+
+        return [permission() for permission in self.permission_classes]
+
+    def get_community(self, community_slug):
+        community = None
+        try:
+            community = Communnity.objects.get(slug=community_slug)
+            return community
+        except:
+            return Response("community not found")
+
+    def get_object(self, community_slug, round_slug, name):
+        community = self.get_community(community_slug)
+        queryset = Round.objects.all()
+        round = get_object_or_404(
+            queryset, communnity=community, slug=round_slug)
+        levels = round.levels.all()
+        level = get_object_or_404(levels, name=name)
+        self.check_object_permissions(self.request, community)
+        return level
 
     def create(self, request):
         serializer = LevelTeamSerializer(data=request.data)
@@ -75,7 +150,6 @@ class viewsets_levelteam(viewsets.ModelViewSet):
 class viewsets_student(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-   
 
     def create(self, request):
         serializer = StudentSerializer(data=request.data)
@@ -99,7 +173,6 @@ class viewsets_student(viewsets.ModelViewSet):
 class viewsets_levelfeedback(viewsets.ModelViewSet):
     queryset = LevelFeedback.objects.all()
     serializer_class = LevelFeedbackSerializer
-   
 
     def create(self, request):
         serializer = LevelFeedbackSerializer(data=request.data)
@@ -122,7 +195,7 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
 class viewsets_teamfeedback(viewsets.ModelViewSet):
     queryset = TeamFeedback.objects.all()
     serializer_class = TeamFeedbackSerializer
-  
+
     def create(self, request):
         serializer = TeamFeedbackSerializer(data=request.data)
         if serializer.is_valid():

@@ -8,6 +8,23 @@ class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level
         fields = '__all__'
+        extra_kwargs = {
+            'round': {'read_only': True},
+        }
+
+    def create(self, validated_data):
+        validated_data['round']=self.context['round']
+        level = Level.objects.create(
+            **validated_data)
+        return round
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get(
+            'description', instance.description)
+        instance.status = validated_data.get('status', instance.status)
+        instance.save()
+        return instance
 
 
 class LevelTeamSerializer(serializers.ModelSerializer):
