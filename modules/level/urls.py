@@ -12,5 +12,6 @@ router.register('teamfeedback', views.viewsets_teamfeedback)
 
 urlpatterns = [
 
-    path('', include(router.urls)),
+    path('community/<slug:community_slug>/rounds/<slug:round_name>/', include(router.urls)),
+
 ]

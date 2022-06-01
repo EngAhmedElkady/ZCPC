@@ -1,12 +1,10 @@
-import json
-
 from django.http import Http404
-from .models import Communnity, Team
+from .models import Team
 from .serializers import AddTMemeberTeam, CommunitySerializer, TeamSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from modules.communnity.models import Communnity
+from modules.community.models import Community
 from rest_framework.response import Response
 from permissions.community import *
 from permissions.helpfunction import Community_Function
@@ -19,7 +17,7 @@ User = get_user_model()
 
 
 class viewsets_community(viewsets.ModelViewSet):
-    queryset = Communnity.objects.all()
+    queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     lookup_field = "slug"
 
@@ -34,7 +32,7 @@ class viewsets_community(viewsets.ModelViewSet):
         return [permission() for permission in self.permission_classes]
 
     def get_object(self, slug):
-        queryset = Communnity.objects.all()
+        queryset = Community.objects.all()
         community = get_object_or_404(queryset, slug=slug)
         self.check_object_permissions(self.request, community)
         return community
@@ -95,7 +93,7 @@ class viewsets_community(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request):
-        communnities = Communnity.objects.all()
+        communnities = Community.objects.all()
         serializer = CommunitySerializer(communnities, many=True)
         return Response({
             'count': len(serializer.data),
@@ -134,7 +132,7 @@ class viewsets_team(viewsets.ModelViewSet):
     # get_object
 
     def get_object(self, community_slug, user__username):
-        queryset = Communnity.objects.all()
+        queryset = Community.objects.all()
         try:
             community = get_object_or_404(queryset, slug=community_slug)
         except:
@@ -189,7 +187,7 @@ class viewsets_team(viewsets.ModelViewSet):
     def destroy(self, request, community_slug, user__username, *args, **kwargs):
         "delete team member with community slug and username"
         try:
-            community = Communnity.objects.get(slug=community_slug)
+            community = Community.objects.get(slug=community_slug)
         except :
             raise Http404("Community not found")
         try:
@@ -204,13 +202,9 @@ class viewsets_team(viewsets.ModelViewSet):
         except :
             raise Http404("member not found")
             
-        
-        
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request, community_slug, *args, **kwargs):
-        queryset = Communnity.objects.all()
+        queryset = Community.objects.all()
         community = get_object_or_404(queryset, slug=community_slug)
         team = community.team.all()
         serializer = TeamSerializer(team, many=True)
@@ -218,7 +212,7 @@ class viewsets_team(viewsets.ModelViewSet):
 
     def create(self, request, community_slug, *args, **kwargs):
         community = get_object_or_404(
-            Communnity.objects.all(), slug=community_slug)
+            Community.objects.all(), slug=community_slug)
         self.check_object_permissions(self.request, community)
         data = {
             'email': request.data.get('email'),
@@ -233,7 +227,6 @@ class viewsets_team(viewsets.ModelViewSet):
             return Response(
                 {
                     'message': 'Team member added successfully',
-                    'data': 'done'
                 },
                 status=status.HTTP_201_CREATED
             )

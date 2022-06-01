@@ -24,7 +24,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="ICPC API",
         default_version="v1",
-        description="A sample API for learning DRF",
+        description="A sample API for ICPC",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="hello@example.com"),
         license=openapi.License(name="BSD License"),
@@ -39,7 +39,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('api-auth', include('rest_framework.urls')),
     path("account/", include('modules.accounts.urls')),
-    path('', include('modules.communnity.urls')),
+    path('', include('modules.community.urls')),
     path('', include('modules.round.urls')),
     path('level/', include('modules.level.urls')),
     path('content/', include('modules.content.urls')),

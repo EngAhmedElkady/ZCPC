@@ -1,6 +1,6 @@
 # blog/models.py
 from django.db import models
-from modules.communnity.models import Communnity
+from modules.community.models import Community
 from django.contrib.auth import get_user_model
 from taggit.managers import TaggableManager
 from django.template.defaultfilters import slugify
@@ -19,7 +19,7 @@ class Post(models.Model):
     auther = models.ForeignKey(User , on_delete=models.CASCADE)
     content = models.TextField()
     title = models.CharField(max_length=100)
-    community = models.ForeignKey(Communnity, on_delete=models.CASCADE,related_name="posts")
+    community = models.ForeignKey(Community, on_delete=models.CASCADE,related_name="posts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=244 , null=True , blank=True)

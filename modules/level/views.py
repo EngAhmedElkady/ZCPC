@@ -1,6 +1,7 @@
+from django.http import Http404
 from .models import Level, LevelFeedback, LevelTeam, Student, TeamFeedback
 from .serializers import *
-from modules.communnity.models import Communnity
+from modules.community.models import Community
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -28,10 +29,10 @@ class viewsets_level(viewsets.ModelViewSet):
     def get_community(self, community_slug):
         community = None
         try:
-            community = Communnity.objects.get(slug=community_slug)
+            community = Community.objects.get(slug=community_slug)
             return community
         except:
-            return Response("community not found")
+            return Http404("Community not found")
 
     def get_object(self, community_slug, round_slug, name):
         community = self.get_community(community_slug)
@@ -111,7 +112,7 @@ class viewsets_levelteam(viewsets.ModelViewSet):
     def get_community(self, community_slug):
         community = None
         try:
-            community = Communnity.objects.get(slug=community_slug)
+            community = Community.objects.get(slug=community_slug)
             return community
         except:
             return Response("community not found")

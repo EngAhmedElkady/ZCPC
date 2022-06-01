@@ -3,7 +3,7 @@ from typing_extensions import Required
 from django import http
 from rest_framework.response import Response
 from rest_framework import serializers
-from .models import Communnity, Team
+from .models import Community, Team
 from django.contrib.auth import get_user_model
 
 
@@ -13,7 +13,7 @@ User = get_user_model()
 
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Communnity
+        model = Community
         fields = "__all__"
         extra_kwargs = {
             'id': {'read_only': True},
@@ -23,7 +23,7 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['owner'] = self.context['owner']
-        comminity = Communnity.objects.create(
+        comminity = Community.objects.create(
             **validated_data)  # saving post object
         return comminity
 

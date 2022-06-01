@@ -2,7 +2,7 @@ from ast import Pass
 from xml.dom.pulldom import parseString
 from django.shortcuts import render , get_object_or_404
 
-from modules.communnity.models import Communnity
+from modules.community.models import Community
 from .models import Post , Comment
 from .serializers import PostApi , CommentApi
 from rest_framework.views import APIView
@@ -20,7 +20,7 @@ class GetAllPostsAndCreate(APIView):
     # get all posts in comuunity 
     def get(self, request , pk,  *args , **kwargs):
         try:
-            community = Communnity.objects.get(name=pk) 
+            community = Community.objects.get(name=pk) 
             posts = Post.objects.all().filter(community=community)
             serializer = PostApi(posts , many=True)
             return Response(serializer.data , status=status.HTTP_200_OK)

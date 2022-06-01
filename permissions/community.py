@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from modules.communnity.models import Communnity
+from modules.community.models import Community
 from modules.round.models import Round
 
 
@@ -12,10 +12,8 @@ class IsInCommunnityTeam(permissions.BasePermission):
     massage = "you are not in the team"
 
     def has_object_permission(self, request, view, obj):
-        print('IsInCommunnityTeam')
-        communnity = obj.get_community()
-        team = communnity.team.all()
-        print("team:", team)
+        community = obj.get_community()
+        team = community.team.all()
         flag = False
         for member in team:
             if request.user == member.user:
@@ -32,10 +30,8 @@ class IsTeamLeader_OR_VICE(permissions.BasePermission):
     massage = "you are not team leader or vice"
 
     def has_object_permission(self, request, view, obj):
-        print('IsTeamLeader_OR_VICE')
-        communnity = obj.get_community()
-        team = communnity.team.all()
-        print(team)
+        community = obj.get_community()
+        team = community.team.all()
         flag = False
         for member in team:
             if request.user == member.user and (member.role == 'Team Leader' or member.role == "Vice"):
@@ -48,8 +44,6 @@ class IsOwner(permissions.BasePermission):
     massage = "you are not owner"
 
     def has_object_permission(self, request, view, obj):
-        print("IsOwner")
-        print(request.user, obj.owner)
         return request.user == obj.owner
 
 
@@ -57,8 +51,6 @@ class IsCurrentUser(permissions.BasePermission):
     massage = "you are not the current user"
 
     def has_object_permission(self, request, view, obj):
-        print('IsCurrentUser')
-        print(request.user, obj.user)
         return request.user == obj.user
 
 
@@ -66,7 +58,6 @@ class IsInLevelTeam(permissions.BasePermission):
     massage = "you are not in the level team"
 
     def has_object_permission(self, request, view, obj):
-        print('IsInLevelTeam')
 
         team = obj.levelteam.all()
         flag = False
@@ -81,7 +72,6 @@ class IsInLevelStudent(permissions.BasePermission):
     massage = "you are not in the level student"
 
     def has_object_permission(self, request, view, obj):
-        print('IsInLevelStudent')
 
         students = obj.levelstudent.all()
         flag = False

@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from knox.models import AuthToken
 
-from modules.communnity.models import Communnity, Team
+from modules.community.models import Community, Team
 User = get_user_model()
 
 
@@ -13,7 +13,6 @@ class CommunnityTest(APITestCase):
         self.user = User.objects.create(username='testuser', codeforces='e', telegram='https://web.telegram.org/',
                                         email='test@gmail.com', password='testpassword')
         self.token = AuthToken.objects.create(user=self.user)[1]
-        print(self.token)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post('/community/', {
             "name": "icpc",
@@ -103,7 +102,7 @@ class TeamTest(APITestCase):
                                         email='test@gmail.com', password='testpassword')
         self.token = AuthToken.objects.create(user=self.user)[1]
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        self.community = Communnity.objects.create(
+        self.community = Community.objects.create(
             name='icpc', university='Zagazig', owner=self.user)
         self.url = '/community/'+self.community.slug+'/team/'
         self.member = Team.objects.create(
@@ -160,7 +159,6 @@ class TeamTest(APITestCase):
     def test_delete_team(self):
         response = self.client.delete(
             self.url+str(self.member.user__username)+'/')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Team.objects.count(), 0)
         

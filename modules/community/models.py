@@ -16,13 +16,13 @@ def user_directory_path(instance, filename):
     return 'community_{0}/{1}'.format(instance.name, filename)
 
 
-class Communnity(models.Model):
+class Community(models.Model):
     '''
         - all community has name, university, owner, createed_at
         - you cant create community if yout not loggedin  
     '''
     name = models.CharField(max_length=100, unique=True)
-    bio=models.CharField(max_length=400,blank=True,null=True)
+    bio = models.CharField(max_length=400, blank=True, null=True)
     image = models.ImageField(
         upload_to=user_directory_path, blank=True, null=True)
     university = models.CharField(max_length=130)
@@ -43,7 +43,7 @@ class Communnity(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
-        super(Communnity, self).save(*args, **kwargs)
+        super(Community, self).save(*args, **kwargs)
 
 
 class Team(models.Model):
@@ -53,7 +53,7 @@ class Team(models.Model):
     '''
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     community = models.ForeignKey(
-        Communnity, on_delete=models.CASCADE, related_name='team')
+        Community, on_delete=models.CASCADE, related_name='team')
     role = models.CharField(max_length=100,  default="member")
     start_journey = models.DateTimeField(auto_now_add=True)
     end_journey = models.DateTimeField(blank=True, null=True)
@@ -62,7 +62,7 @@ class Team(models.Model):
     @property
     def user__username(self):
         return self.user.username
-    
+
     def __unicode__(self):
         return self.user.username
 

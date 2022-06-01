@@ -1,9 +1,8 @@
 # help function
-from modules.communnity.models import Communnity
-from modules.communnity.models import Communnity  
+from modules.community.models import Community  
 from modules.level.models import Level
 def incommunityteam(user, id):
-    communnity = Communnity.objects.get(id=id)
+    communnity = Community.objects.get(id=id)
     team = communnity.team.all()
     flag = False
     for member in team:
@@ -14,7 +13,7 @@ def incommunityteam(user, id):
 
 
 def isteamleader(user, id):
-    communnity = Communnity.objects.get(id=id)
+    communnity = Community.objects.get(id=id)
     team = communnity.team.all()
     flag = False
     for member in team:
@@ -88,7 +87,6 @@ class Community_Function:
         "take user and level"
         students = level.levelstudent.all()
         flag = False
-        print(students)
         for student in students:
             if user == student.user:
                 flag = True

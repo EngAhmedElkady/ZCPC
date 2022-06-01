@@ -8,13 +8,12 @@ class RoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = '__all__'
         extra_kwargs = {
-            'communnity': {'read_only': True},
+            'community': {'read_only': True},
             'slug': {'read_only': True},
         }
 
     def create(self, validated_data):
-        validated_data['communnity']=self.context['communnity']
-        print(validated_data)
+        validated_data['community']=self.context['community']
         round = Round.objects.create(
             **validated_data)
         return round

@@ -9,7 +9,7 @@ User = get_user_model()
 
 class Level(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField(max_length=700)
+    description = models.TextField(max_length=700,blank=True,null=True)
     round = models.ForeignKey(
         Round, on_delete=models.CASCADE, related_name="levels")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -25,8 +25,8 @@ class Level(models.Model):
         return f"{self.name}"
 
     def get_community(self):
-        community_id = self.round.communnity.id
-        return community_id
+        community = self.round.community
+        return community
 
 
 class LevelTeam(models.Model):
@@ -45,8 +45,8 @@ class LevelTeam(models.Model):
         return f"{self.user} at {self.level} as {self.role}."
 
     def get_community(self):
-        community_id = self.level.get_community()
-        return community_id
+        community = self.level.get_community()
+        return community
 
 
 class Student(models.Model):
@@ -64,8 +64,8 @@ class Student(models.Model):
         return f"{self.user_id} at {self.level}."
 
     def get_community(self):
-        community_id = self.level.get_community()
-        return community_id
+        community = self.level.get_community()
+        return community
 
 
 class LevelFeedback(models.Model):
@@ -81,8 +81,8 @@ class LevelFeedback(models.Model):
         return str(self.level)
 
     def get_community(self):
-        community_id = self.level.get_community()
-        return community_id
+        community= self.level.get_community()
+        return community
 
 
 class TeamFeedback(models.Model):
@@ -100,5 +100,5 @@ class TeamFeedback(models.Model):
         return str(self.team_member)
 
     def get_community(self):
-        community_id = self.level.get_community()
-        return community_id
+        community = self.level.get_community()
+        return community
