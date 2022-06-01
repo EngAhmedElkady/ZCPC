@@ -24,7 +24,7 @@ class viewsets_round(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated]
         elif self.action in ['update', 'partial_update', 'create']:
             self.permission_classes = [IsAuthenticated, IsInCommunnityTeam]
-        elif self.action in ['destroy']:
+        elif self.action == 'destroy':
             self.permission_classes = [IsTeamLeader_OR_VICE]
 
         return [permission() for permission in self.permission_classes]

@@ -1,4 +1,4 @@
-# communnity/models.py
+# community/models.py
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.template.defaultfilters import slugify
@@ -6,7 +6,7 @@ from django.template.defaultfilters import slugify
 
 User = get_user_model()
 
-# create communnity model
+# create community model
 # delete owner field from Community model --
 
 

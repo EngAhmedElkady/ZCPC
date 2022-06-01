@@ -41,7 +41,7 @@ urlpatterns = [
     path("account/", include('modules.accounts.urls')),
     path('', include('modules.community.urls')),
     path('', include('modules.round.urls')),
-    path('level/', include('modules.level.urls')),
+    path('', include('modules.level.urls')),
     path('content/', include('modules.content.urls')),
     path('blog/', include('modules.blog.urls')),
 

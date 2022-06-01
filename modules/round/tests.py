@@ -21,15 +21,12 @@ class RoundTest(APITestCase):
         self.url = '/community/{}/rounds/'.format(self.community.slug)
         self.data = {
             "name": "round1",
+            'description': 'round1',
         }
 
     def test_create_round(self):
-        data = {
-            "name": "round2"
-        }
-        response = self.client.post(self.url, data)
+        response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], data['name'])
 
     def test_create_round_with_user_not_in_team(self):
         self.team.delete()
@@ -60,6 +57,7 @@ class RoundTest(APITestCase):
     def test_delete_round_with_user_is_not_TeamLeader_or_Vice(self):
         self.team.role = 'Member'
         self.team.save()
+        
         data = {
             "name": "round1"
         }

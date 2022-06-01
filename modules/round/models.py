@@ -27,7 +27,7 @@ class Round(models.Model):
         verbose_name_plural = "Rounds"
 
     def __str__(self):
-        return f"{self.name}_{self.communnity.name}"
+        return f"{self.name}_{self.community.name}"
 
     def get_community(self):
         return self.community
