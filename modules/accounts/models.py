@@ -19,11 +19,14 @@ def user_directory_path(instance, filename):
 class CustomUser(AbstractUser):
     name = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(_('email address'), blank=False, unique=True)
-    upload = models.ImageField(
+    image = models.ImageField(
         upload_to=user_directory_path, blank=True, null=True)
     bio = models.CharField(max_length=500, blank=True, null=True)
-    codeforces_account = models.CharField(max_length=100)
-    github_account = models.CharField(max_length=100, blank=True, null=True)
+    codeforces = models.CharField(max_length=100)
+    university = models.CharField(max_length=150, blank=True, null=True)
+    github = models.URLField(max_length=100, blank=True, null=True)
+    telegram = models.URLField(max_length=100, unique=True)
+    linkedin = models.URLField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.username

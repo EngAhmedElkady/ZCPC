@@ -49,21 +49,32 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'knox',
     'django_rest_passwordreset',
+    'drf_yasg',
+    'taggit',
 
     # apps
     'modules.accounts.apps.AccountsConfig',
-    'modules.communnity.apps.CommunnityConfig',
-    'modules.blog.apps.BlogConfig'
+    'modules.community.apps.CommunityConfig',
+    'modules.blog.apps.BlogConfig',
+    'modules.round.apps.RoundConfig',
+    'modules.level.apps.LevelConfig',
+    'modules.content.apps.ContentConfig',
 
 ]
 
 REST_FRAMEWORK = {
+
     'DEFAULT_AUTHENTICATION_CLASSES':
     [
-        'knox.auth.TokenAuthentication'
+        'knox.auth.TokenAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
     ],
     # 'DEFAULT_PERMISSION_CLASSES':
     # ['rest_framework.permissions.IsAuthenticated'],
+}
+REST_KNOX = {
+    'TOKEN_TTL': None,  # will create tokens that never expire
 }
 
 
@@ -123,24 +134,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('NAME'),
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'),
-        'PORT': config('PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': config('NAME'),
+#         'USER': config('USER'),
+#         'PASSWORD': config('PASSWORD'),
+#         'HOST': config('HOST'),
+#         'PORT': config('PORT'),
+#     }
+# }
 
 
 # Password validation
@@ -204,3 +215,14 @@ ACCOUNT_LOGOUT_REDIRECT = 'home'  # new
 
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'  # new
+
+# swagger
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

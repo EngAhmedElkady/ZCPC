@@ -1,33 +1,49 @@
+from dataclasses import field
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 import django.contrib.auth.password_validation as validators
+from django.contrib.auth import authenticate
 
 User = get_user_model()
 
 # User Serializer
-
-
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for user data 
     """
     class Meta:
         model = User
-        fields = ["id","username", "name", "email","bio","github_account","codeforces_account"]
-        
-        
+        fields = ('id', 'username', 'name', 'email', 'bio',
+                  'university', 'image', 'codeforces', 'linkedin', 'github','telegram')
+
+
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Invalid Details.")
+
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', "codeforces_account", 'password')
-        extra_kwargs = {'password': {'write_only': True}}   # not return in serializer data
+        fields = ('username', 'codeforces',
+                  'telegram', 'email', 'password')
+        # not return in serializer data
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         print(validated_data)
-        user = User.objects.create_user(username=validated_data['username'], email=validated_data['email'],
-                                        codeforces_account=validated_data['codeforces_account'], password=validated_data['password'])
+        user = User.objects.create_user(username=validated_data['username'],
+                                        codeforces=validated_data['codeforces'],
+                                        telegram=validated_data['telegram'],
+                                        email=validated_data['email'],
+                                        password=validated_data['password'])
         return user
 
     def validate_password(self, data):
@@ -51,6 +67,10 @@ class UpdateUserSerializer(serializers.Serializer):
     Serializer for update user endpoint.
     """
     name = serializers.CharField(required=False)
+    image = serializers.CharField(required=False)
     bio = serializers.CharField(required=False)
-    codeforces_account = serializers.CharField(required=False)
-    github_account = serializers.CharField(required=False)
+    codeforces = serializers.CharField(required=False)
+    telegram = serializers.URLField(required=False)
+    github = serializers.URLField(required=False)
+    linkedin = serializers.URLField(required=False)
+    university = serializers.CharField(required=False)
