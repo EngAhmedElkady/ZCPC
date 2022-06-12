@@ -7,7 +7,6 @@ from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
-from permissions.helpfunction import isteamleader, incommunityteam, isinlevelteam, isinlevelstudent
 from rest_condition import And, Or, Not
 
 
@@ -60,8 +59,8 @@ class viewsets_content(viewsets.ModelViewSet):
             try:
                 level = Level.objects.get(id=level_id)
                 print(level)
-                if incommunityteam(request.user.id, level.get_community()) == False:
-                    return Response("you do not have access")
+                # if incommunityteam(request.user.id, level.get_community()) == False:
+                #     return Response("you do not have access")
                 serializer.save()
                 return Response(
                     serializer.data,
