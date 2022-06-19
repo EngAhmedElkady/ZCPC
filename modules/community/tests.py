@@ -163,7 +163,7 @@ class TeamTest(APITestCase):
         self.assertEqual(Team.objects.count(), 0)
         
     def test_delete_team_with_wrong_user(self):
-        user = User.objects.create(username='testuser3', codeforces='el', telegram='https://sweb.telegram.org/',
+        user = User.objects.create(username='testuser3', codeforces='el',email="aa@gmail.com", telegram='https://sweb.telegram.org/',
                                    password='testlpassword')
         token = AuthToken.objects.create(user=user)[1]
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)

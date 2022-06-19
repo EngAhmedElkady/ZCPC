@@ -114,13 +114,13 @@ class LevelFeedback(models.Model):
 
 class LevelTeamFeedback(models.Model):
     "store the feedback about all members in level team."
-    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="teamfeedback")
+    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="levl_feedbacks")
     student = models.ForeignKey(
-        Student, on_delete=models.CASCADE, related_name="student_feedback")
+        Student, on_delete=models.CASCADE, related_name="student_feedbacks")
     team_member = models.ForeignKey(
-        LevelTeam, on_delete=models.CASCADE, related_name='member_feedbacks')
+        LevelTeam, on_delete=models.CASCADE, related_name='feedbacks')
     stars = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)])
+        validators=[MinValueValidator(1), MaxValueValidator(10)])
     feedback = models.TextField()
 
     def __str__(self):

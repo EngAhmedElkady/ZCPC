@@ -1,5 +1,6 @@
 from ast import Is
 import re
+from this import d
 from django.http import Http404
 from .models import Level, LevelTeam, Student, LevelFeedback
 
@@ -213,11 +214,11 @@ class viewsets_level_student(viewsets.ModelViewSet):
 
     def get_permissions(self):
 
-        if self.action in ['list', 'retrieve', 'create','destroy']:
+        if self.action in ['list', 'retrieve', 'create', 'destroy']:
             self.permission_classes = [IsAuthenticated]
         elif self.action in ['update', 'partial_update']:
             self.permission_classes = [IsAuthenticated, IsInCommunnityTeam]
-    
+
         return [permission() for permission in self.permission_classes]
 
     def get_community(self, community_slug):
@@ -250,7 +251,6 @@ class viewsets_level_student(viewsets.ModelViewSet):
             level.students.all(), user__username=user__username)
         serializers = StudentSerializer(student)
         return Response(data=serializers.data, status=status.HTTP_200_OK)
-
 
     def update(self, request, community_slug, round_slug, name, user__username, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
@@ -302,18 +302,18 @@ class viewsets_level_student(viewsets.ModelViewSet):
         level = self.get_object(community_slug, round_slug, name)
         student = get_object_or_404(
             level.students.all(), user__username=user__username)
-        if not Community_Function.is_owner(request.user,student.user) and not Community_Function.is_in_community_team(request.user,student):
-           return Response(status=status.HTTP_403_FORBIDDEN)
+        if not Community_Function.is_owner(request.user, student.user) and not Community_Function.is_in_community_team(request.user, student):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         student.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 
 class viewsets_levelfeedback(viewsets.ModelViewSet):
-    
-    queryset=LevelFeedback.objects.all()
-    serializer_class=LevelFeedbackSerializer
-    lookup_field='id'
-    
+
+    queryset = LevelFeedback.objects.all()
+    serializer_class = LevelFeedbackSerializer
+    lookup_field = 'id'
+
     def get_community(self, community_slug):
         community = None
         try:
@@ -321,7 +321,7 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
             return community
         except:
             raise Http404("Community not found")
-        
+
     def get_object(self, community_slug, round_slug, name):
         community = self.get_community(community_slug)
         queryset = Round.objects.all()
@@ -330,33 +330,32 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
         levels = round.levels.all()
         level = get_object_or_404(levels, name=name)
         return level
-    
+
     def list(self, request, community_slug, round_slug, name, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
         feedbacks = level.feedbacks.all()
         serializers = LevelFeedbackSerializer(feedbacks, many=True)
         return Response(data=serializers.data, status=status.HTTP_200_OK)
-    
-   
+
     def retrieve(self, request, community_slug, round_slug, name, id, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
         feedback = get_object_or_404(
             level.feedbacks.all(), id=id)
         serializers = LevelFeedbackSerializer(feedback)
         return Response(data=serializers.data, status=status.HTTP_200_OK)
-        
-    def update(self, request, community_slug, round_slug, name, id,*args, **kwargs):
+
+    def update(self, request, community_slug, round_slug, name, id, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
         feedback = get_object_or_404(
             level.feedbacks.all(), id=id)
         data = {
             "feedback": request.data.get('feedback', feedback.feedback),
-            "stars":request.data.get('stars', feedback.stars),
+            "stars": request.data.get('stars', feedback.stars),
         }
-        
-        if not Community_Function.is_owner(request.user,feedback.student):
+
+        if not Community_Function.is_owner(request.user, feedback.student):
             return Response(status=status.HTTP_403_FORBIDDEN)
-            
+
         serializer = LevelFeedbackSerializer(instance=feedback,
                                              data=data,
                                              partial=True)
@@ -365,19 +364,19 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
     def partial_update(self, request, community_slug, round_slug, name, id, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
         feedback = get_object_or_404(
             level.feedbacks.all(), id=id)
         data = {
             "feedback": request.data.get('feedback', feedback.feedback),
-            "stars":request.data.get('stars', feedback.stars),
+            "stars": request.data.get('stars', feedback.stars),
         }
-        
-        if not Community_Function.is_owner(request.user,feedback.student):
+
+        if not Community_Function.is_owner(request.user, feedback.student):
             return Response(status=status.HTTP_403_FORBIDDEN)
-            
+
         serializer = LevelFeedbackSerializer(instance=feedback,
                                              data=data,
                                              partial=True)
@@ -386,12 +385,12 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+
     def create(self, request, community_slug, round_slug, name, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
-        if not Community_Function.is_in_level_student(request.user,level):
-            return Response(status=status.HTTP_403_FORBIDDEN,data={'detail':'You are not in this level'})
-        student=Student.objects.get(level=level,user=request.user)
+        if not Community_Function.is_in_level_student(request.user, level):
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'detail': 'You are not in this level'})
+        student = Student.objects.get(level=level, user=request.user)
         data = {
             'student': student.id,
             'level': level.id,
@@ -404,23 +403,23 @@ class viewsets_levelfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-    def destory(self, request, community_slug, round_slug, name, id, *args, **kwargs):
+
+    def destroy(self, request, community_slug, round_slug, name, id, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
         feedback = get_object_or_404(
             level.feedbacks.all(), id=id)
-        if not Community_Function.is_teamleader_or_vise(request.user,level) :
-               return Response(status=status.HTTP_403_FORBIDDEN)
+        if not Community_Function.is_owner(request.user, feedback.student):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         feedback.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
 
-class viewsets_teamfeedback(viewsets.ModelViewSet):
-    queryset=LevelTeamFeedback.objects.all()
-    serializer_class=LevelTeamFeedbackSerializer
-    lookup_field='id'
-    
+
+class viewsets_levelteamfeedback(viewsets.ModelViewSet):
+
+    queryset = LevelTeamFeedback.objects.all()
+    serializer_class = LevelTeamFeedbackSerializer
+    lookup_field = 'id'
+
     def get_community(self, community_slug):
         community = None
         try:
@@ -428,49 +427,80 @@ class viewsets_teamfeedback(viewsets.ModelViewSet):
             return community
         except:
             raise Http404("Community not found")
-        
-    def get_level(self, community_slug, round_slug, name):
+
+    def get_object(self, community_slug, round_slug, name):
         community = self.get_community(community_slug)
         queryset = Round.objects.all()
         round = get_object_or_404(
             queryset, community=community, slug=round_slug)
         levels = round.levels.all()
         level = get_object_or_404(levels, name=name)
-        
         return level
-    
-    def list(self, request, community_slug, round_slug, name,username, *args, **kwargs):
-        level = self.get_level(community_slug, round_slug, name)
-        team=level.team.all()
-        member=get_object_or_404(team,username=username)
-        feedbacks = member.member_feedbacks.all()
+
+    def list(self, request, community_slug, round_slug, name, username, *args, **kwargs):
+        level = self.get_object(community_slug, round_slug, name)
+        if not Community_Function.is_teamleader_or_vise(request.user, level):
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'detail': 'You are not in Leader or Vise of this level'})
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("username not found")
+        try:
+            team_member = LevelTeam.objects.get(level=level, user=user)
+        except LevelTeam.DoesNotExist:
+            raise Http404("this user not int level team")
+
+        team_member = LevelTeam.objects.get(level=level, user=user)
+        feedbacks = team_member.feedbacks.all()
         serializers = LevelTeamFeedbackSerializer(feedbacks, many=True)
         return Response(data=serializers.data, status=status.HTTP_200_OK)
-    
-   
-    def retrieve(self, request, community_slug, round_slug, name,username,id, *args, **kwargs):
-        level = self.get_level(community_slug, round_slug, name)
-        team=level.team.all()
-        member=get_object_or_404(team,username=username)
-        feedbacks = member.member_feedbacks.all()
-        feedback=get_object_or_404(feedbacks,id=id)
+
+    def retrieve(self, request, community_slug, round_slug, name, username, id, *args, **kwargs):
+        level = self.get_object(community_slug, round_slug, name)
+        
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("username not found")
+        try:
+            team_member = LevelTeam.objects.get(level=level, user=user)
+        except LevelTeam.DoesNotExist:
+            raise Http404("this user not int level team")
+
+        team_member = LevelTeam.objects.get(level=level, user=user)
+        
+        try:
+            feedback = team_member.feedbacks.get(id=id)
+        except LevelTeamFeedback.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        if not Community_Function.is_teamleader_or_vise(request.user, level) and not Community_Function.is_owner(request.user, feedback.student):
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'detail': 'You are not in Leader or Vise of this level'})
+        
         serializers = LevelTeamFeedbackSerializer(feedback)
         return Response(data=serializers.data, status=status.HTTP_200_OK)
+
+    def update(self, request, community_slug, round_slug, name,username ,id, *args, **kwargs):
+        level = self.get_object(community_slug, round_slug, name)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("username not found")
+        try:
+            team_member = LevelTeam.objects.get(level=level, user=user)
+        except LevelTeam.DoesNotExist:
+            raise Http404("this user not int level team")
+        feedback = get_object_or_404(
+            team_member.feedbacks.all(), id=id)
         
-    def update(self, request, community_slug, round_slug, name, username,id,*args, **kwargs):
-        level = self.get_level(community_slug, round_slug, name)
-        team=level.team.all()
-        member=get_object_or_404(team,username=username)
-        feedbacks = member.member_feedbacks.all()
-        feedback=get_object_or_404(feedbacks,id=id)
         data = {
             "feedback": request.data.get('feedback', feedback.feedback),
-            "stars":request.data.get('stars', feedback.stars),
+            "stars": request.data.get('stars', feedback.stars),
         }
-        
-        if not Community_Function.is_owner(request.user,feedback.student):
+
+        if not Community_Function.is_owner(request.user, feedback.student):
             return Response(status=status.HTTP_403_FORBIDDEN)
-            
+
         serializer = LevelTeamFeedbackSerializer(instance=feedback,
                                              data=data,
                                              partial=True)
@@ -481,19 +511,26 @@ class viewsets_teamfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     def partial_update(self, request, community_slug, round_slug, name,username ,id, *args, **kwargs):
-        level = self.get_level(community_slug, round_slug, name)
-        team=level.team.all()
-        member=get_object_or_404(team,username=username)
-        feedbacks = member.member_feedbacks.all()
-        feedback=get_object_or_404(feedbacks,id=id)
+        level = self.get_object(community_slug, round_slug, name)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("username not found")
+        try:
+            team_member = LevelTeam.objects.get(level=level, user=user)
+        except LevelTeam.DoesNotExist:
+            raise Http404("this user not int level team")
+        feedback = get_object_or_404(
+            team_member.feedbacks.all(), id=id)
+        
         data = {
             "feedback": request.data.get('feedback', feedback.feedback),
-            "stars":request.data.get('stars', feedback.stars),
+            "stars": request.data.get('stars', feedback.stars),
         }
-        
-        if not Community_Function.is_owner(request.user,feedback.student):
+
+        if not Community_Function.is_owner(request.user, feedback.student):
             return Response(status=status.HTTP_403_FORBIDDEN)
-            
+
         serializer = LevelTeamFeedbackSerializer(instance=feedback,
                                              data=data,
                                              partial=True)
@@ -502,18 +539,21 @@ class viewsets_teamfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-           
-            
-    def create(self, request, community_slug, round_slug, name,username,*args, **kwargs):
+        
+    def create(self, request, community_slug, round_slug, name, username, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
-        if not Community_Function.is_in_level_student(request.user,level):
-            return Response(status=status.HTTP_403_FORBIDDEN,data={'detail':'You are not in this level'})
-        student=Student.objects.get(level=level,user=request.user)
-        member=get_object_or_404(level.team.all(),username=username)
+        if not Community_Function.is_in_level_student(request.user, level):
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'detail': 'You are not in this level'})
+        student = Student.objects.get(level=level, user=request.user)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={'detail': 'User not found'})
+        member = LevelTeam.objects.get(level=level, user=user)
         data = {
             'student': student.id,
             'level': level.id,
-            'team_member':member.id,
+            'team_member': member.id,
             'stars': request.data.get('stars'),
             'feedback': request.data.get('feedback'),
         }
@@ -523,17 +563,27 @@ class viewsets_teamfeedback(viewsets.ModelViewSet):
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, community_slug, round_slug, name, username, id, *args, **kwargs):
+        level = self.get_object(community_slug, round_slug, name)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("username not found")
+        try:
+            team_member = LevelTeam.objects.get(level=level, user=user)
+        except LevelTeam.DoesNotExist:
+            raise Http404("this user not int level team")
+
+        team_member = LevelTeam.objects.get(level=level, user=user)
         
+        try:
+            feedback = team_member.feedbacks.get(id=id)
+        except LevelTeamFeedback.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         
-    def destory(self, request, community_slug, round_slug, name,username,id, *args, **kwargs):
-        level = self.get_level(community_slug, round_slug, name)
-        team=level.team.all()
-        member=get_object_or_404(team,username=username)
-        feedbacks = member.member_feedbacks.all()
-        feedback=get_object_or_404(feedbacks,id=id)
-        if not Community_Function.is_teamleader_or_vise(request.user,level) :
-               return Response(status=status.HTTP_403_FORBIDDEN)
+        if not Community_Function.is_teamleader_or_vise(request.user, level) and not Community_Function.is_owner(request.user, feedback.student):
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'detail': 'You are not in Leader or Vise of this level'})
+        
         feedback.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-  

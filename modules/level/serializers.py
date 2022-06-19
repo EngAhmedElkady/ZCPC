@@ -89,3 +89,14 @@ class LevelTeamFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = LevelTeamFeedback
         fields = '__all__'
+        
+    def create(self, validated_data):
+        levelteamfeedback = LevelTeamFeedback.objects.create(
+            **validated_data)
+        return levelteamfeedback
+
+    def update(self, instance, validated_data):
+        instance.stars = validated_data.get('stars', instance.stars)
+        instance.feedback = validated_data.get('feedback', instance.feedback)
+        instance.save()
+        return instance

@@ -192,16 +192,20 @@ class viewsets_team(viewsets.ModelViewSet):
             raise Http404("Community not found")
         try:
             team = community.team.all()
+            print(team)
+            print(request.user)
             member = team.get(user__username=user__username)
-            if Community_Function.is_in_community_team(request.user, community) or Community_Function.is_owner(request.user.username, member.user__username):
+            print(member,1)
+            if Community_Function.is_in_community_team(request.user, community) or Community_Function.is_owner(request.user, member):
                 member.delete()
+                print(123)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
+                print
                 return Response(status=status.HTTP_403_FORBIDDEN)
                
         except :
-            raise Http404("member not found")
-            
+            return Response(status=status.HTTP_404_NOT_FOUND)            
 
     def list(self, request, community_slug, *args, **kwargs):
         queryset = Community.objects.all()

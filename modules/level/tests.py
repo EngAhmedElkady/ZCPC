@@ -1,10 +1,12 @@
+import email
+from this import s
 from rest_framework import status
 from rest_framework.test import APITestCase
 from knox.models import AuthToken
 from django.contrib.auth import get_user_model
 from modules.community.models import Community, Team
 from modules.round.models import Round
-from modules.level.models import Level, LevelFeedback, LevelTeam, Student
+from modules.level.models import Level, LevelFeedback, LevelTeam, LevelTeamFeedback, Student
 User = get_user_model()
 
 # Create your tests here.
@@ -189,25 +191,25 @@ class StudentTest(APITestCase):
         self.assertEqual(Student.objects.get().user, self.user)
         self.assertEqual(Student.objects.get().level, self.level)
         self.assertEqual(Student.objects.get().status, True)
-        
-    
+
     def test_get_level_student(self):
         response = self.client.get(self.url+'students/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
-        
+
     def test_get_student_in_level(self):
         student = Student.objects.create(
             user=self.user, level=self.level, status=True)
-        response = self.client.get(self.url+'students/'+str(student.username)+'/')
+        response = self.client.get(
+            self.url+'students/'+str(student.username)+'/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Student.objects.get().user, self.user)
-        
-        
+
     def test_get_student_not_in_level(self):
-        response = self.client.get(self.url+'students/'+str(self.user.username)+'/')
+        response = self.client.get(
+            self.url+'students/'+str(self.user.username)+'/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
+
     def test_update_level_student(self):
         student = Student.objects.create(
             user=self.user, level=self.level, status=True)
@@ -215,7 +217,7 @@ class StudentTest(APITestCase):
             self.url+'students/'+str(student.username)+'/', {'status': False})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Student.objects.get().status, False)
-        
+
     def test_delete_level_student(self):
         student = Student.objects.create(
             user=self.user, level=self.level, status=True)
@@ -223,13 +225,13 @@ class StudentTest(APITestCase):
             self.url+'students/'+str(student.username)+'/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Student.objects.count(), 0)
-        
+
     def test_delete_level_student_not_in_level(self):
         response = self.client.delete(
             self.url+'students/'+str(self.user.username)+'/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Student.objects.count(), 0)
-        
+
     def test_delete_level_student_with_not_current_user(self):
         student = Student.objects.create(
             user=self.user, level=self.level, status=True)
@@ -241,10 +243,10 @@ class StudentTest(APITestCase):
         response = self.client.delete(
             self.url+'students/'+str(self.user.username)+'/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
-       
+
+
 class LevelFeedbackTest(APITestCase):
-    
+
     def setUp(self):
         self.user = User.objects.create(username='testuser', codeforces='e',
                                         telegram='https://web.telegram.org/', password='testpassword',
@@ -255,53 +257,204 @@ class LevelFeedbackTest(APITestCase):
             name='icpc', university='Zagazig', owner=self.user)
         self.team = Team.objects.create(
             user=self.user, community=self.community, role='Team Leader')
-        self.round = Round.objects.create( name='round1', community=self.community)
+        self.round = Round.objects.create(
+            name='round1', community=self.community)
         self.level = Level.objects.create(name='level1', round=self.round)
         self.url = '/community/{}/rounds/{}/levels/{}/'.format(
             self.community.slug, self.round.slug, self.level.name)
-        
-        
+
     def test_create_level_feedback_not_in_level(self):
-        response = self.client.post(self.url+'feedbacks/', {'feedback': 'test'})
+        response = self.client.post(
+            self.url+'feedbacks/', {'feedback': 'test'})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
     def test_create_level_feedback_student_does_not_in_level(self):
         level = Level.objects.create(name='level2', round=self.round)
-        student=Student.objects.create(user=self.user, level=level, status=True)
-        feedback=LevelFeedback.objects.create(feedback='test', stars=10,student=student,level=level)
-        response = self.client.post(self.url+'feedbacks/', {'feedback': 'test'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        student = Student.objects.create(
+            user=self.user, level=level, status=True)
+        feedback = LevelFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=level)
+        response = self.client.post(
+            self.url+'feedbacks/', {'feedback': 'test'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_level_feedback_in_level(self):
-        student_feedback=Student.objects.create(user=self.user, level=self.level, status=True)
-        response = self.client.post(self.url+'feedbacks/', {'feedback': 'test','stars':10})
+        student_feedback = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        response = self.client.post(
+            self.url+'feedbacks/', {'feedback': 'test', 'stars': 10})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(LevelFeedback.objects.count(), 1)
         self.assertEqual(LevelFeedback.objects.get().feedback, 'test')
         self.assertEqual(LevelFeedback.objects.get().stars, 10)
-        
+
     def test_get_level_feedbacks(self):
-        new_student=Student.objects.create(user=self.user, level=self.level, status=True)
-        LevelFeedback.objects.create(feedback='test', stars=10,student=new_student,level=self.level)
+        new_student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        LevelFeedback.objects.create(
+            feedback='test', stars=10, student=new_student, level=self.level)
         response = self.client.get(self.url+'feedbacks/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        
+
     def test_get_level_feedback(self):
-        new_student=Student.objects.create(user=self.user, level=self.level, status=True)
-        feedback=LevelFeedback.objects.create(feedback='test', stars=10,student=new_student,level=self.level)
+        new_student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelFeedback.objects.create(
+            feedback='test', stars=10, student=new_student, level=self.level)
         response = self.client.get(self.url+'feedbacks/'+str(feedback.id)+'/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(LevelFeedback.objects.get().feedback, 'test')
-        
+
     def test_update_level_feedback(self):
-        student=Student.objects.create(user=self.user, level=self.level, status=True)
-        feedback=LevelFeedback.objects.create(feedback='test', stars=10,student=student,level=self.level)
-        response = self.client.put(self.url+'feedbacks/'+str(feedback.id)+'/', {'feedback': 'test2','stars':10})
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level)
+        response = self.client.put(
+            self.url+'feedbacks/'+str(feedback.id)+'/', {'feedback': 'test2', 'stars': 10})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(LevelFeedback.objects.get().feedback, 'test2')
         self.assertEqual(LevelFeedback.objects.get().stars, 10)
+
+    def test_delete_feedback(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level)
+        response = self.client.delete(
+            self.url+'feedbacks/'+str(feedback.id)+'/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(LevelFeedback.objects.count(), 0)
+
+
+class TeamFeedbackTest(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(username='testuser', codeforces='e',
+                                        telegram='https://web.telegram.org/', password='testpassword',
+                                        email="a@gmail.com")
+        self.token = AuthToken.objects.create(user=self.user)[1]
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        self.community = Community.objects.create(
+            name='icpc', university='Zagazig', owner=self.user)
+        self.team = Team.objects.create(
+            user=self.user, community=self.community, role='Team Leader')
+        self.round = Round.objects.create(
+            name='round1', community=self.community)
+        self.level = Level.objects.create(name='level1', round=self.round)
+        self.member = LevelTeam.objects.create(
+            user=self.user, level=self.level, role='mentor')
+        self.url = '/community/{}/rounds/{}/levels/{}/team/{}'.format(
+            self.community.slug, self.round.slug, self.level.name, self.member.username)
+
+    def test_create_level_member_feedback(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        response = self.client.post(
+            self.url+'/feedbacks/', {'feedback': 'good', 'stars': 10})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(LevelTeamFeedback.objects.count(), 1)
+
+    def test_create_level_member_feedback_by_user_not_student(self):
+        response = self.client.post(
+            self.url+'/feedbacks/', {'feedback': 'good', 'stars': 10})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    def test_create_level_member_feedback_by_user_not_in_level(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        url='/community/{}/rounds/{}/levels/{}/team/{}'.format(
+            self.community.slug, self.round.slug, self.level.name, 'ahmed')
+        response = self.client.post(
+            url+'/feedbacks/', {'feedback': 'good', 'stars': 10}
+            )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
+    # List all level team feedbacks
+    def test_get_level_member_feedbacks(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.get(self.url+'/feedbacks/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        
+    def test_get_level_member_feedbacks_by_nt_leader_or_vice(self):
+        self.team.role='member'
+        self.team.save()
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.get(self.url+'/feedbacks/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    
+    
+    # retrieve level team feedback
+    def test_get_level_member_feedback_by_id(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.get(self.url+'/feedbacks/'+str(feedback.id)+'/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(LevelTeamFeedback.objects.get().feedback, 'test')
+        
+    
+    def test_get_level_member_feedback_by_id_by_not_leader_or_vice(self):
+        self.team.role='member'
+        self.team.save()
+        
+        
+    def test_get_level_member_feedback_by_id_by_not_in_level(self):
+        response = self.client.get(self.url+'/feedbacks/'+str(5)+'/')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
+        
+    # update level team feedback
+    def test_update_level_member_feedback(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.put(self.url+'/feedbacks/'+str(feedback.id)+'/', {'feedback': 'test2', 'stars': 10})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(LevelTeamFeedback.objects.get().feedback, 'test2')
+        
+    def test_update_level_member_feedback_by_not_owner(self):
+        user=User.objects.create(username='testuser2', codeforces='e',email="lll@gmail.com",
+                                    telegram='https://wesb.telegram.org/', password='testpassword')
+        student = Student.objects.create(
+            user=user, level=self.level, status=True)
+        feedback = LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.put(self.url+'/feedbacks/'+str(feedback.id)+'/', {'feedback': 'test2', 'stars': 10})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        
+    # delete level team feedback
+    def test_delete_level_member_feedback(self):
+        student = Student.objects.create(
+            user=self.user, level=self.level, status=True)
+        feedback = LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.delete(self.url+'/feedbacks/'+str(feedback.id)+'/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(LevelTeamFeedback.objects.count(), 0)
+        
+    def test_delete_level_member_feedback_by_not_owner(self):
+        self.team.role='member'
+        self.team.save()
+        user=User.objects.create(username='testuser2', codeforces='e',email="aa@gmail.com",
+                                    telegram='https://wesb.telegsram.org/', password='testpassword')
+        student = Student.objects.create(user=user, level=self.level, status=True)
+        feedback = LevelTeamFeedback.objects.create(
+            feedback='test', stars=10, student=student, level=self.level,team_member=self.member)
+        response = self.client.delete(self.url+'/feedbacks/'+str(feedback.id)+'/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
     
         
-      
