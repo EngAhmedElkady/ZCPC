@@ -58,4 +58,5 @@ class Community_Function:
 
     @staticmethod
     def is_owner(user_f,user_s):
+        # print( user_f.username,user_s.username)
         return user_f.username==user_s.username
