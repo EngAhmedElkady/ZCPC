@@ -1,76 +1,75 @@
-from django.shortcuts import render
+from gc import get_objects
+from urllib import response
+from django.shortcuts import get_object_or_404, render
 from . import serializers
 from . import models
 from modules.level.models import Level
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # help function
-from rest_condition import And, Or, Not
+from permissions.helpfunction import Community_Function
+from permissions.community import *
+from django.http import Http404
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 
 class viewsets_content(viewsets.ModelViewSet):
+
     queryset = models.Content.objects.all()
     serializer_class = serializers.ContentSerializer
-   
+    lookup_field = 'id'
 
-    def list(self, request, level_id):
+    def get_permissions(self):
+
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'create']:
+            self.permission_classes = [IsAuthenticated, IsInCommunnityTeam]
+        elif self.action in ['destroy']:
+            self.permission_classes = [IsTeamLeader_OR_VICE]
+
+        return [permission() for permission in self.permission_classes]
+
+    def get_community(self, community_slug):
+        community = None
         try:
-            level = Level.objects.get(id=level_id)
-            contents = level.contents.all()
-            content_serializer = serializers.ContentSerializer(
-                contents, many=True)
-            return Response({
-                "contents": content_serializer.data,
-            }
-            )
+            community = Community.objects.get(slug=community_slug)
+            return community
         except:
-            return Response("level not found")
+            raise Http404("Community not found")
 
-    def retrieve(self, request, pk, *args, **kwargs):
-        try:
-            content = models.Content.objects.get(id=pk)
-            files = content.files.all()
-            problems = content.problems.all()
-            videos = content.videos.all()
-            content_serializer = serializers.ContentSerializer(content)
-            file_serializer = serializers.FileSerializer(files, many=True)
-            problem_serializer = serializers.ProblemSerializer(problems, many=True)
-            video_serializer = serializers.VideoSerializer(videos, many=True)
-            return Response({
-                "content": content_serializer.data,
-                "files": file_serializer.data,
-                "videos": video_serializer.data,
-                "sheet": problem_serializer.data
-            }
-            )
-        except :
-            return Response({
-                "contents": content_serializer.data,
-                }
-            )
-            
+    def get_object(self, community_slug, round_slug, name):
+        community = self.get_community(community_slug)
+        queryset = Round.objects.all()
+        round = get_object_or_404(
+            queryset, community=community, slug=round_slug)
+        levels = round.levels.all()
+        level = get_object_or_404(levels, name=name)
+        self.check_object_permissions(self.request, community)
+        return level
 
-    def create(self, request, level_id):
-        serializer = serializers.ContentSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                level = Level.objects.get(id=level_id)
-                print(level)
-                # if incommunityteam(request.user.id, level.get_community()) == False:
-                #     return Response("you do not have access")
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status.HTTP_200_OK,
-                )
-            except:
-                return Response({
-                    "message": "level not found"
-                }, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, community_slug, round_slug, name, *args, **kwargs):
+        pass
 
-        return Response(
-            status.HTTP_400_BAD_REQUEST
-        )
+    def list(self, request, community_slug, round_slug, name, *args, **kwargs):
+        level = self.get_object(community_slug, round_slug, name)
+        print(level)
+        contents = level.contents.all()
+        print(level, contents)
+        serializer = self.serializer_class(contents, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, community_slug, round_slug, name, id, *args, **kwargs):
+        pass
+
+    def update(self, request, community_slug, round_slug, name, user__username, *args, **kwargs):
+        pass
+
+    def partial_update(self, request, community_slug, round_slug, name, user__username, *args, **kwargs):
+        pass
+
+    def destroy(self, request, community_slug, round_slug, name, user__username, *args, **kwargs):
+        pass

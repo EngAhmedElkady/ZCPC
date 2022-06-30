@@ -1,6 +1,3 @@
-from ast import Is
-import re
-from this import d
 from django.http import Http404
 from .models import Level, LevelTeam, Student, LevelFeedback
 

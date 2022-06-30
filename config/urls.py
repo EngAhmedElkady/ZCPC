@@ -42,7 +42,7 @@ urlpatterns = [
     path('', include('modules.community.urls')),
     path('', include('modules.round.urls')),
     path('', include('modules.level.urls')),
-    path('content/', include('modules.content.urls')),
+    path('', include('modules.content.urls')),
     path('blog/', include('modules.blog.urls')),
 
     path('swagger/', schema_view.with_ui(
