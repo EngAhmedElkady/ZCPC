@@ -41,7 +41,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("admin/", admin.site.urls),
-    path('accounts/', include('allauth.urls')),
+    # path('accounts/', include('allauth.urls')),
     path('api-auth', include('rest_framework.urls')),
     path("account/", include('modules.accounts.urls')),
     path('', include('modules.community.urls')),
