@@ -1,3 +1,4 @@
+from re import S
 from django.db import models
 from modules.round.models import Round
 from django.contrib.auth import get_user_model
@@ -9,7 +10,7 @@ User = get_user_model()
 
 class Level(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField(max_length=700,blank=True,null=True)
+    description = models.TextField(max_length=700, blank=True, null=True)
     round = models.ForeignKey(
         Round, on_delete=models.CASCADE, related_name="levels")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -30,19 +31,27 @@ class Level(models.Model):
 
 
 class LevelTeam(models.Model):
-
-    fields = [('instructor', 'instructor'), ('mentor', 'mentor')]
+    choices_data = (('instructor', 'instructor'), ('mentor', 'mentor'))
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(
         Level, on_delete=models.CASCADE, related_name="team")
-    role = models.CharField(max_length=200, choices=fields)
+    
+    role = models.CharField(
+    max_length=200, choices=choices_data, default=choices_data[1][0])
+
+    @property
+    def username(self):
+        return self.user.username
+
+    def __unicode__(self):
+        return self.user.username
 
     class Meta:
         verbose_name = "LevelTeam"
         verbose_name_plural = "LevelTeams"
 
     def __str__(self):
-        return f"{self.user} at {self.level} as {self.role}."
+        return f"{self.user} at {self.level} as {self.role} ."
 
     def get_community(self):
         community = self.level.get_community()
@@ -53,15 +62,22 @@ class Student(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(
-        Level, on_delete=models.CASCADE, related_name="student")
+        Level, on_delete=models.CASCADE, related_name="students")
     status = models.BooleanField(default=True)
 
+
+    @property
+    def username(self):
+        return self.user.username
+
+    def __unicode__(self):
+        return self.user.username
     class Meta:
         verbose_name = "Student"
         verbose_name_plural = "Students"
 
     def __str__(self):
-        return f"{self.user_id} at {self.level}."
+        return f"{self.user} at {self.level}."
 
     def get_community(self):
         community = self.level.get_community()
@@ -71,12 +87,23 @@ class Student(models.Model):
 class LevelFeedback(models.Model):
     "store the feedback about all members in level team."
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="feedback")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="feedbacks")
     stars = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)])
-    disc = models.TextField()
+        validators=[MinValueValidator(1), MaxValueValidator(10)])
+    feedback = models.TextField()
 
+    @property
+    def username(self):
+        return self.student.username
+
+    def __unicode__(self):
+        return self.student.username
+    
+    class Meta:
+        verbose_name = "LevelFeedback"
+        verbose_name_plural = "LevelFeedbacks"
+    
     def __str__(self):
         return str(self.level)
 
@@ -85,16 +112,16 @@ class LevelFeedback(models.Model):
         return community
 
 
-class TeamFeedback(models.Model):
+class LevelTeamFeedback(models.Model):
     "store the feedback about all members in level team."
-    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="teamfeedback")
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="userteamfeedback")
+    level = models.ForeignKey(Level, on_delete=models.CASCADE,related_name="levl_feedbacks")
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name="student_feedbacks")
     team_member = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='teamfeedback')
+        LevelTeam, on_delete=models.CASCADE, related_name='feedbacks')
     stars = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)])
-    disc = models.TextField()
+        validators=[MinValueValidator(1), MaxValueValidator(10)])
+    feedback = models.TextField()
 
     def __str__(self):
         return str(self.team_member)

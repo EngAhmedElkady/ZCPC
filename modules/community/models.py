@@ -58,9 +58,10 @@ class Team(models.Model):
     start_journey = models.DateTimeField(auto_now_add=True)
     end_journey = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=True)
+    facebook_page=models.URLField(blank=True, null=True)
 
     @property
-    def user__username(self):
+    def username(self):
         return self.user.username
 
     def __unicode__(self):

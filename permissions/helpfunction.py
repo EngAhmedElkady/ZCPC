@@ -1,56 +1,6 @@
 # help function
 from modules.community.models import Community  
 from modules.level.models import Level
-def incommunityteam(user, id):
-    communnity = Community.objects.get(id=id)
-    team = communnity.team.all()
-    flag = False
-    for member in team:
-        if user == member.user.id:
-            flag = True
-            break
-    return flag
-
-
-def isteamleader(user, id):
-    communnity = Community.objects.get(id=id)
-    team = communnity.team.all()
-    flag = False
-    for member in team:
-        if int(user) == member.user_id.id and (member.role == 'Team Leader' or member.role == "Vise"):
-            flag = True
-            break
-    return flag
-
-
-def isinlevelstudent(user, id):
-    level = Level.objects.get(id=id)
-    students = level.levelstudent.all()
-    flag = False
-    print(students)
-    for student in students:
-        if int(user) == student.user.id:
-            flag = True
-            break
-    return flag
-
-
-def isinlevelteam(user_id, id):
-    round = Level.objects.get(id=id)
-    team = round.levelteam.all()
-    flag = False
-    for member in team:
-        if int(user_id) == member.user.id:
-            flag = True
-            break
-    return flag
-
-
-def isowner(user_id,id):
-    return int(user_id)==int(id)
-
-
-
 
 class Community_Function:
     """this is community permission :
@@ -61,8 +11,9 @@ class Community_Function:
         all functions in this class take a object
     """
     @staticmethod
-    def is_in_community_team(user, community):
+    def is_in_community_team(user, obj):
         "take user and community"
+        community = obj.get_community()
         team = community.team.all()
         flag = False
         for member in team:
@@ -72,12 +23,13 @@ class Community_Function:
         return flag
 
     @staticmethod
-    def is_teamleader_or_vise(user,community):
+    def is_teamleader_or_vise(user,obj):
         "take user and community"
+        community = obj.get_community()
         team = community.team.all()
         flag = False
         for member in team:
-            if user == member.user and (member.role == 'Team Leader' or member.role == "Vise"):
+            if user == member.user and (member.role == 'Team Leader' or member.role == "Vice"):
                 flag = True
                 break
         return flag
@@ -85,7 +37,7 @@ class Community_Function:
     @staticmethod
     def is_in_level_student(user, level):
         "take user and level"
-        students = level.levelstudent.all()
+        students = level.students.all()
         flag = False
         for student in students:
             if user == student.user:
@@ -106,4 +58,5 @@ class Community_Function:
 
     @staticmethod
     def is_owner(user_f,user_s):
-        return user_f==user_s
+        # print( user_f.username,user_s.username)
+        return user_f.username==user_s.username

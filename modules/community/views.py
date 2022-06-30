@@ -116,7 +116,7 @@ class viewsets_team(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
     model = Team
-    lookup_field = 'user__username'
+    lookup_field = 'username'
 
     # permissions
     def get_permissions(self):
@@ -131,7 +131,7 @@ class viewsets_team(viewsets.ModelViewSet):
         
     # get_object
 
-    def get_object(self, community_slug, user__username):
+    def get_object(self, community_slug, username):
         queryset = Community.objects.all()
         try:
             community = get_object_or_404(queryset, slug=community_slug)
@@ -139,22 +139,25 @@ class viewsets_team(viewsets.ModelViewSet):
             raise Http404("Community not found")
         try:
             team = community.team.all()
-            member = team.get(user__username=user__username,
+            user=User.objects.get(username=username)
+            member = team.get(user=user,
                               community=community)
             self.check_object_permissions(self.request, community)
             return member
         except:
             raise Http404("member not found")
 
-    def retrieve(self, request, community_slug, user__username, *args, **kwargs):
+    def retrieve(self, request, community_slug, username, *args, **kwargs):
+        print("ahmed")
         "retrieve the team member with community slug and username"
-        instance = self.get_object(community_slug, user__username)
+        instance = self.get_object(community_slug, username)
+        print(instance,'llllllllllll')
         serializer = TeamSerializer(instance)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, community_slug, user__username, *args, **kwargs):
+    def update(self, request, community_slug, username, *args, **kwargs):
         "update team member with community slug and username"
-        instance = self.get_object(community_slug, user__username)
+        instance = self.get_object(community_slug, username)
         data = {
             "role": request.data.get('role', instance.role),
             "status": request.data.get('status', instance.role),
@@ -168,9 +171,9 @@ class viewsets_team(viewsets.ModelViewSet):
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def partial_update(self, request, community_slug, user__username, *args, **kwargs):
+    def partial_update(self, request, community_slug, username, *args, **kwargs):
         "update team member with community slug and username"
-        instance = self.get_object(community_slug, user__username)
+        instance = self.get_object(community_slug, username)
         data = {
             "role": request.data.get("role", instance.role),
             "status": request.data.get('status', instance.role),
@@ -184,7 +187,7 @@ class viewsets_team(viewsets.ModelViewSet):
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, community_slug, user__username, *args, **kwargs):
+    def destroy(self, request, community_slug, username, *args, **kwargs):
         "delete team member with community slug and username"
         try:
             community = Community.objects.get(slug=community_slug)
@@ -192,16 +195,19 @@ class viewsets_team(viewsets.ModelViewSet):
             raise Http404("Community not found")
         try:
             team = community.team.all()
-            member = team.get(user__username=user__username)
-            if Community_Function.is_in_community_team(request.user, community) or Community_Function.is_owner(request.user.username, member.user__username):
+            user=User.objects.get(username=username)
+            member = team.get(user=user)
+            print(member,1)
+            if Community_Function.is_in_community_team(request.user, community) or Community_Function.is_owner(request.user, member):
                 member.delete()
+                print(123)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
+                print
                 return Response(status=status.HTTP_403_FORBIDDEN)
                
         except :
-            raise Http404("member not found")
-            
+            return Response(status=status.HTTP_404_NOT_FOUND)            
 
     def list(self, request, community_slug, *args, **kwargs):
         queryset = Community.objects.all()

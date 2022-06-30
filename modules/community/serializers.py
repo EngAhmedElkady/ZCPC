@@ -69,7 +69,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ['user', "user__username", 'community', 'role',
+        fields = ['user', "username", 'community', 'role',
                   'start_journey', 'end_journey', 'status']
         extra_kwargs = {
             'user': {'read_only': True},
