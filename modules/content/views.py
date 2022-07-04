@@ -56,7 +56,6 @@ class viewsets_content(viewsets.ModelViewSet):
 
     def list(self, request, community_slug, round_slug, name, *args, **kwargs):
         level = self.get_object(community_slug, round_slug, name)
-        print(level)
         contents = level.contents.all()
         print(level, contents)
         serializer = self.serializer_class(contents, many=True)
