@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'drf_yasg',
     'taggit',
+    'ckeditor',
 
     # apps
     'modules.accounts.apps.AccountsConfig',

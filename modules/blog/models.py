@@ -4,6 +4,7 @@ from modules.communnity.models import Communnity
 from django.contrib.auth import get_user_model
 from taggit.managers import TaggableManager
 from django.template.defaultfilters import slugify
+from ckeditor.fields import RichTextField
 # Create your models here.
 
 
@@ -17,7 +18,7 @@ class Post(models.Model):
         - the post contain auther, title, community, content, tag 
     '''
     auther = models.ForeignKey(User , on_delete=models.CASCADE)
-    content = models.TextField()
+    content = RichTextField(null=True , blank=True)
     title = models.CharField(max_length=100)
     community = models.ForeignKey(Communnity, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
