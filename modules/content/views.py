@@ -63,7 +63,12 @@ class viewsets_content(viewsets.ModelViewSet):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, community_slug, round_slug, name, id, *args, **kwargs):
-        pass
+        level = self.get_object(community_slug, round_slug, name)
+        print(level)
+        contents = level.contents.all()
+        content=contents.get(id=id)
+        serializer = self.serializer_class(content)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, community_slug, round_slug, name, user__username, *args, **kwargs):
         pass
