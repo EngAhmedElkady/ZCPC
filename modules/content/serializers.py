@@ -21,10 +21,7 @@ class ProblemSerializer(serializers.ModelSerializer):
 
 
 class ContentSerializer(serializers.ModelSerializer):
-    files = FileSerializer(read_only=True, many=True)
-    problems = ProblemSerializer(read_only=True, many=True)
-    video = VideoSerializer(read_only=True, many=True)
-
     class Meta:
         model = Content
-        fields = ('files', 'video', 'problems')
+        fields = ('name','id','files', 'videos', 'problems')
+        depth = 1
