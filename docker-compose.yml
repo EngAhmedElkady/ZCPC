@@ -1,13 +1,13 @@
 version: '3.9'
 services:
-    db:
-        image: postgres
-        volumes:
-          - postgres_data:/var/lib/postgresql/data/
-        environment:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+    # db:
+    #     image: postgres
+    #     volumes:
+    #       - postgres_data:/var/lib/postgresql/data/
+    #     environment:
+    #       POSTGRES_DB: postgres
+    #       POSTGRES_USER: postgres
+    #       POSTGRES_PASSWORD: postgres
         
         
     web:
@@ -18,5 +18,5 @@ services:
       ports:
       - 8000:8000
       
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:
