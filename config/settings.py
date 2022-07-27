@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import dj_database_url
 from pathlib import Path
 import os
 from decouple import config, Csv
@@ -27,7 +28,7 @@ SECRET_KEY = 'django-insecure-owva692p2w5cjo1p_^(vsa6ic1nl*!_y09umxbz9hnoss+e%le
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['zcpc.herokuapp.com','0.0.0.0']
+ALLOWED_HOSTS = ['zcpc.herokuapp.com', '0.0.0.0', '127.0.0.1']
 
 
 # Application definition
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # new
+    'whitenoise.runserver_nostatic',  # new
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
@@ -104,7 +105,7 @@ ACCOUNT_UNIQUE_EMAIL = True  # new
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # new
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # new
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -141,10 +142,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': "dtubd9gelrpks",
-        'HOST':"ec2-34-231-63-30.compute-1.amazonaws.com",
-        'PORT':5432,
-        'USER':'vioeikkkqafhnw',
-        'PASSWORD':'9ec6c07753784def6df6756f4fd1a5a29c74bd4648820d466c2318dd566861dd'
+        'HOST': "ec2-34-231-63-30.compute-1.amazonaws.com",
+        'PORT': 5432,
+        'USER': 'vioeikkkqafhnw',
+        'PASSWORD': '9ec6c07753784def6df6756f4fd1a5a29c74bd4648820d466c2318dd566861dd'
     }
 }
 
@@ -160,7 +161,6 @@ DATABASES = {
 #     }
 # }
 
-import dj_database_url
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 

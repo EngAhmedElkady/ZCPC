@@ -20,8 +20,8 @@ class ProblemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Content
-        fields = ('name','id','files', 'videos', 'problems')
-        depth = 1
+        fields = '__all__'
