@@ -1,4 +1,5 @@
 # accounts/views.py
+from tkinter import SW
 from rest_framework import status
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -103,6 +104,7 @@ class UpdateUserAPIView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
+        print(request.user)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid() and request.user == self.object:
             self.object.name = request.data.get('name', self.object.name)

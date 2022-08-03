@@ -24,7 +24,7 @@ class CommunnityTest(APITestCase):
         self.assertEqual(response.data['owner'], self.user.id)
         self.assertEqual(response.data['slug'], 'icpc')
         self.assertEqual(response.data['bio'], None)
-        self.assertEqual(response.data['image'], None)
+        self.assertEqual(response.data['image'], '/media/1.png')
 
     def test_create_community(self):
         response = self.client.post('/community/', {
@@ -37,7 +37,7 @@ class CommunnityTest(APITestCase):
         self.assertEqual(response.data['owner'], self.user.id)
         self.assertEqual(response.data['slug'], 'new')
         self.assertEqual(response.data['bio'], None)
-        self.assertEqual(response.data['image'], None)
+        self.assertEqual(response.data['image'], '/media/1.png')
 
     def test_get_communities(self):
         response = self.client.get('/community/')
@@ -48,7 +48,7 @@ class CommunnityTest(APITestCase):
         self.assertEqual(response.data['results'][0]['owner'], self.user.id)
         self.assertEqual(response.data['results'][0]['slug'], 'icpc')
         self.assertEqual(response.data['results'][0]['bio'], None)
-        self.assertEqual(response.data['results'][0]['image'], None)
+        self.assertEqual(response.data['results'][0]['image'], '/media/1.png')
 
     def test_get_community(self):
         response = self.client.get('/community/icpc/')
@@ -58,7 +58,7 @@ class CommunnityTest(APITestCase):
         self.assertEqual(response.data['owner'], self.user.id)
         self.assertEqual(response.data['slug'], 'icpc')
         self.assertEqual(response.data['bio'], None)
-        self.assertEqual(response.data['image'], None)
+        self.assertEqual(response.data['image'], '/media/1.png')
 
     def test_update_community(self):
         response = self.client.patch('/community/icpc/', {

@@ -24,7 +24,7 @@ class Community(models.Model):
     name = models.CharField(max_length=100, unique=True)
     bio = models.CharField(max_length=400, blank=True, null=True)
     image = models.ImageField(
-        upload_to=user_directory_path, blank=True, null=True)
+        upload_to=user_directory_path, default='1.png')
     university = models.CharField(max_length=130)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,7 +58,7 @@ class Team(models.Model):
     start_journey = models.DateTimeField(auto_now_add=True)
     end_journey = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=True)
-    facebook_page=models.URLField(blank=True, null=True)
+    facebook_page = models.URLField(blank=True, null=True)
 
     @property
     def username(self):

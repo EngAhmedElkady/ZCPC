@@ -7,6 +7,8 @@ from django.contrib.auth import authenticate
 User = get_user_model()
 
 # User Serializer
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for user data 
@@ -14,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'name', 'email', 'bio',
-                  'university', 'image', 'codeforces', 'linkedin', 'github','telegram')
+                  'university', 'image', 'codeforces', 'linkedin', 'github', 'telegram')
 
 
 class LoginUserSerializer(serializers.Serializer):
@@ -67,7 +69,7 @@ class UpdateUserSerializer(serializers.Serializer):
     Serializer for update user endpoint.
     """
     name = serializers.CharField(required=False)
-    image = serializers.CharField(required=False)
+    image = serializers.ImageField(required=False)
     bio = serializers.CharField(required=False)
     codeforces = serializers.CharField(required=False)
     telegram = serializers.URLField(required=False)

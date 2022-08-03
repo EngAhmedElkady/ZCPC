@@ -39,7 +39,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
+    # path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("admin/", admin.site.urls),
     # path('accounts/', include('allauth.urls')),
     path('api-auth', include('rest_framework.urls')),
@@ -50,7 +50,7 @@ urlpatterns = [
     path('', include('modules.content.urls')),
     path('blog/', include('modules.blog.urls')),
 
-    path('swagger/', schema_view.with_ui(
+    path('', schema_view.with_ui(
         'swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui(
         'redoc', cache_timeout=0), name='schema-redoc'),
