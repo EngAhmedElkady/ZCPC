@@ -1,7 +1,6 @@
 
-# Soon
-#Documentation Icpc Platform
-#Summary:
+# Documentation Icpc Platform
+# Summary:
 
 An ICPC Platform System is software built to handle the primary main functions of an ICPC. Platforms rely on communities and famous road maps. The platform system helps members to train on the open rounds for any community and allows leaders to create communities, as well as members’ subscriptions and profiles.
 
@@ -14,7 +13,7 @@ ICPC Platform systems also involve full automation functions that help communiti
     This platform has the primary function for anyone who wants to start a journey in competitive programming, and the communities so let’s explain each thing.
 
 
-##Community:
+## Community:
 
 Each university can create a community, the community will have everything you want like in the real world.
 - Team: Community has a team, the leader and the vice only can add a new person, and this platform has scripted it will remove the person who doesn’t satisfy the rule, if anyone from this team contributes at least 4 rounds who will be from the community core.
@@ -24,11 +23,12 @@ Each university can create a community, the community will have everything you w
 - Student: Each Level has students they can join to any level.
 - Students can put feedback to the mentor or the level.
 
-##Newcomers:
+## Newcomers:
 The newcomers can show all communities and sort them, and search about the community and so on.
 He will receive an email after each week with feedback from the mentor and some information about his performance this week.
 
 
+## Database Design:
 
 
-Docs: https://docs.google.com/document/d/1SJQUBaGBbDNewN-CVUoH7eM6191ahAW-knlsqsqC_C4/edit?usp=sharing
+
