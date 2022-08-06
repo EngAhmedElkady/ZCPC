@@ -138,28 +138,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': "dtubd9gelrpks",
-        'HOST': "ec2-34-231-63-30.compute-1.amazonaws.com",
-        'PORT': 5432,
-        'USER': 'vioeikkkqafhnw',
-        'PASSWORD': '9ec6c07753784def6df6756f4fd1a5a29c74bd4648820d466c2318dd566861dd'
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config('NAME'),
-#         'USER': config('USER'),
-#         'PASSWORD': config('PASSWORD'),
-#         'HOST': config('HOST'),
-#         'PORT': config('PORT'),
+#         'NAME': "dtubd9gelrpks",
+#         'HOST': "ec2-34-231-63-30.compute-1.amazonaws.com",
+#         'PORT': 5432,
+#         'USER': 'vioeikkkqafhnw',
+#         'PASSWORD': '9ec6c07753784def6df6756f4fd1a5a29c74bd4648820d466c2318dd566861dd'
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('NAME'),
+        'USER': config('USER'),
+        'PASSWORD': config('PASSWORD'),
+        'HOST': config('HOST'),
+        'PORT': 5432,
+    }
+}
 
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
